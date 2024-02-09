@@ -1,19 +1,15 @@
 function step_goal_notif() {
+  var health_settings = require("Storage").readJSON("health.json",1)||{};
   var settings = Object.assign({
     goal_enabled: true,
     nag_enabled: true,
     reminder_start_time: 9,
-    reminder_stop_time: 21
+    reminder_stop_time: 21,
+    has_triggered: false
   }, require("Storage").readJSON("step_goal.json", true) || {});
 
   function setSettings() {
     require("Storage").writeJSON("step_goal.json", settings);
-  }
-
-  var health_settings = require("Storage").readJSON("health.json",1)||{};
-  if (settings.has_triggered == undefined) {
-    settings.has_triggered = false;
-    setSettings();
   }
   
   function achieved_step_goal() {

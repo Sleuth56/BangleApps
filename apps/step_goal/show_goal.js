@@ -15,7 +15,8 @@ function display_graphic() {
     goal_enabled: true,
     nag_enabled: true,
     reminder_start_time: 9,
-    reminder_stop_time: 21
+    reminder_stop_time: 21,
+    has_triggered: false
   }, require("Storage").readJSON("step_goal.json", true) || {});
 
   function setSettings() {
@@ -28,16 +29,23 @@ function display_graphic() {
   const steps_text_x = 60;
   const timeout = 2000;
 
+  // Turn on the screen
   Bangle.setOptions({backlightTimeout: 0}); // turn off the screen timeout
   Bangle.setBacklight(1); // Turn display backlight on
+  
+  // Setup and display the base screen info
   g.clear();
   g.setFont("6x8:2x3");
   g.setColor(1, 1, 1);
   g.drawString(" You made it\nto your goal!", text_x, text_y);
   g.setColor(1, 0, 0);
   g.drawString(`${health_settings.stepGoal-1}`, steps_text_x, steps_text_y);
+
+  // Set that we have shown the screen
   settings.has_triggered = true;
   setSettings();
+
+  // Screen animation
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
     g.clearRect(steps_text_x, steps_text_y, 200, 300);
     g.setColor(0, 1, 1);
