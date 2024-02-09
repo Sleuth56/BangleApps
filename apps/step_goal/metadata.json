@@ -13,5 +13,8 @@
     {"name":"step_goal.show_goal.js","url":"show_goal.js"},
     {"name":"step_goal.boot.js","url":"boot.js"},
     {"name":"step_goal.img","url":"app-icon.js","evaluate":true}
+  ],
+  "data": [
+    {"name": "step_goal.json"}
   ]
 }

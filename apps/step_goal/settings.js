@@ -4,32 +4,16 @@
     nag_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21
-  }, require("Storage").readJSON("health.json", true) || {});
+  }, require("Storage").readJSON("step_goal.json", true) || {});
 
   function setSettings() {
-    require("Storage").writeJSON("health.json", settings);
+    require("Storage").writeJSON("step_goal.json", settings);
   }
 
   E.showMenu({
-    "": { title: /*LANG*/"Health Tracking" },
+    "": { title: /*LANG*/"Step Goal" },
 
     /*LANG*/"< Back": () => back(),
-
-    /*LANG*/"HRM Interval": {
-      value: settings.hrm,
-      min: 0,
-      max: 3,
-      format: v => [
-        /*LANG*/"Off",
-        /*LANG*/"3 min",
-        /*LANG*/"10 min",
-        /*LANG*/"Always"
-      ][v],
-      onchange: v => {
-        settings.hrm = v;
-        setSettings();
-      }
-    },
 
     /*LANG*/"Reminder Start Hour": {
       value: settings.reminder_start_time,
