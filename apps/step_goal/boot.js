@@ -35,7 +35,6 @@ function step_goal_notif() {
   Bangle.on('midnight', function() { write_to_config('has_triggered', false); });
   main();
   setInterval(main, 60000);
-  // setTimeout(achieved_step_goal,5000);
 }
 
 step_goal_notif();
