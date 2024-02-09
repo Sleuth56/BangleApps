@@ -6,7 +6,7 @@ function step_goal_notif() {
   }
   
   function achieved_step_goal() {
-    load('step_goal_screen.js');
+    load('step_goal.show_goal.js');
   }
 
   function write_to_config(key, value) {
