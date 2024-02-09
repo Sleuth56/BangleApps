@@ -36,6 +36,8 @@ function display_graphic() {
   g.drawString(" You made it\nto your goal!", text_x, text_y);
   g.setColor(1, 0, 0);
   g.drawString(`${health_settings.stepGoal-1}`, steps_text_x, steps_text_y);
+  settings.has_triggered = true;
+  setSettings();
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
     g.clearRect(steps_text_x, steps_text_y, 200, 300);
     g.setColor(0, 1, 1);
@@ -44,8 +46,6 @@ function display_graphic() {
   }).then(()=>{
     return new Promise(resolve=>setTimeout(resolve,timeout*3));
   }).then(()=>{
-    settings.has_triggered = false;
-    setSettings();
     load();
   });
 }

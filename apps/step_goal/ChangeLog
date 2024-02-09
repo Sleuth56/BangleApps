@@ -3,3 +3,4 @@
 0.03: Fix naming so step goal screen shows correctly
 0.04: Change how settings work
 0.05: Finally everything works
+0.06: Fix a bug where has_triggered wasn't being set to true when the alert screen was triggered.
