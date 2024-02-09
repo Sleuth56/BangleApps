@@ -23,8 +23,6 @@ function step_goal_notif() {
   function main() {
     if (!settings.has_triggered) {
       if (Bangle.getHealthStatus("day").steps >= health_settings.stepGoal) {
-        settings.has_triggered = true;
-        setSettings();
         achieved_step_goal();
       }
     }

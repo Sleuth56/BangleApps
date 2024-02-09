@@ -11,6 +11,16 @@ function buz_watch() {
 }
 
 function display_graphic() {
+  var settings = Object.assign({
+    goal_enabled: true,
+    nag_enabled: true,
+    reminder_start_time: 9,
+    reminder_stop_time: 21
+  }, require("Storage").readJSON("step_goal.json", true) || {});
+
+  function setSettings() {
+    require("Storage").writeJSON("step_goal.json", settings);
+  }
   var health_settings = require("Storage").readJSON("health.json",1)||{};
   const text_y = 40;
   const text_x = 10;
@@ -34,6 +44,8 @@ function display_graphic() {
   }).then(()=>{
     return new Promise(resolve=>setTimeout(resolve,timeout*3));
   }).then(()=>{
+    settings.has_triggered = false;
+    setSettings();
     load();
   });
 }
