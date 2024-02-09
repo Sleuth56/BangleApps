@@ -1,1 +1,1 @@
-E.message("Not implemented yet, sorry.", "Step Goal");
+E.showMessage("Not implemented yet, sorry.", "Step Goal");
