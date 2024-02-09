@@ -38,14 +38,14 @@
     },
 
     /*LANG*/"Step Goal Notification": {
-      value: "enabled" in settings ? settings.goal_enabled : false,
+      value: "enabled" in settings ? settings.goal_enabled : true,
       onchange: () => {
         settings.enabled = !settings.goal_enabled;
         setSettings();
       }
     },
     /*LANG*/"Step Goal Nag": {
-      value: "enabled" in settings ? settings.nag_enabled : false,
+      value: "enabled" in settings ? settings.nag_enabled : true,
       onchange: () => {
         settings.enabled = !settings.nag_enabled;
         setSettings();
