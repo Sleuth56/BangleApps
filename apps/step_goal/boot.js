@@ -11,18 +11,29 @@ function step_goal_notif() {
   function setSettings() {
     require("Storage").writeJSON("step_goal.json", settings);
   }
-  
-  function achieved_step_goal() {
-    load('step_goal.show_goal.js');
+
+  function needed_steps(current_steps, step_goal, current_hour, end_hour) {
+    let remaining_steps = step_goal - current_steps;
+    let remaining_time = end_hour - current_hour;
+    console.log(`remaining steps: ${remaining_steps}, remaining time ${remaining_time}`);
+
+    if (remaining_time <= 0) { return 0; }
+
+    if (remaining_steps <= 0 ) { 
+      return 0; 
+    }
+    else {
+      return Math.round(remaining_steps / remaining_time);
+    }
   }
-  
+
   function main() {
     // Check if the message has been shown already
     if (!settings.has_triggered) {
       // Check if we are at or over our step goal
       if (Bangle.getHealthStatus("day").steps >= health_settings.stepGoal && settings.goal_enabled == true) {
         // Trigger the message
-        achieved_step_goal();
+        load('step_goal.show_goal.js');
       }
     }
     // If we have shown the screen
@@ -34,6 +45,10 @@ function step_goal_notif() {
         settings.has_triggered = false;
         setSettings();
       }
+    }
+
+    if (needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, new Date().getHours(), settings.reminder_stop_time) > 0) {
+      load('step_goal.show_nag.js');
     }
   }
 
