@@ -1,7 +1,7 @@
 (function (back) {
   var settings = Object.assign({
     goal_enabled: true,
-    nag_enabled: true,
+    reminder_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21,
     has_triggered: false
@@ -39,18 +39,18 @@
     },
 
     /*LANG*/"Step Goal Notification": {
-      value: "enabled" in settings ? settings.goal_enabled : true,
+      value: "goal_enabled" in settings ? settings.goal_enabled : true,
       onchange: () => {
-        settings.enabled = !settings.goal_enabled;
+        settings.goal_enabled = !settings.goal_enabled;
         setSettings();
       }
     },
-    /*LANG*/"Step Goal Nag": {
-      value: "enabled" in settings ? settings.nag_enabled : true,
+    /*LANG*/"Step Goal Reminder": {
+      value: "reminder_enabled" in settings ? settings.reminder_enabled : true,
       onchange: () => {
-        settings.enabled = !settings.nag_enabled;
+        settings.reminder_enabled = !settings.reminder_enabled;
         setSettings();
       }
     },
   });
-})
+});
