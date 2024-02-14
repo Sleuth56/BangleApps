@@ -16,7 +16,7 @@ function needed_steps(current_steps, step_goal, current_hour, end_hour) {
 function display_nag() {
   var settings = Object.assign({
     goal_enabled: true,
-    nag_enabled: true,
+    reminder_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21,
     has_triggered: false
