@@ -1,7 +1,7 @@
 { "id": "step_goal",
   "name": "Step Goal",
   "shortName":"Step Goal",
-  "version":"0.08",
+  "version":"0.09",
   "description": "Shows you when you hit your daily step goal.",
   "icon": "app.png",
   "tags": "",
@@ -13,7 +13,7 @@
     {"name":"step_goal.boot.js","url":"boot.js"},
     {"name":"step_goal.img","url":"app-icon.js","evaluate":true},
     {"name":"step_goal.show_goal.js","url":"show_goal.js"},
-    {"name":"step_goal.show_nag.js","url":"show_nag.js"}
+    {"name":"step_goal.show_reminder.js","url":"show_reminder.js"}
   ],
   "data": [
     {"name": "step_goal.json"}
