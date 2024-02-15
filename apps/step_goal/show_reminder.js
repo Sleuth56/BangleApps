@@ -1,15 +1,26 @@
-function needed_steps(current_steps, step_goal, current_hour, end_hour) {
-  let remaining_steps = step_goal - current_steps;
-  let remaining_time = end_hour - current_hour;
-  console.log(`remaining steps: ${remaining_steps}, remaining time ${remaining_time}`);
+function steps_per_hour(current_steps, step_goal, start_hour, end_hour) {
+  let steps_left = step_goal - current_steps;
+  return steps_left / (end_hour - start_hour);
+}
 
-  if (remaining_time <= 0) { return 0; }
+function needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
+  let test = steps_per_hour(0, step_goal, start_hour, end_hour);
+  let hours_in = current_hour - start_hour;
 
-  if (remaining_steps <= 0 ) { 
-    return 0; 
+  return test * hours_in;
+}
+
+function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
+  let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
+
+  if (current_hour > end_hour) {
+    return true;
+  }
+  if (needed_steps2 > current_steps) {
+    return false;
   }
   else {
-    return Math.round(remaining_steps / remaining_time);
+    return true;
   }
 }
 
@@ -41,12 +52,16 @@ function display_nag() {
   Bangle.buzz(1000, 0.1);
   g.setFont("6x8:2x3");
   g.setColor(1, 1, 1);
-  let remaining_steps = needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, new Date().getHours(), settings.reminder_stop_time);
-  remaining_steps = '1234567890123';
-  g.drawString(` ${remaining_steps}\n steps to hit\n   your goal`, text_x, text_y);
-  // return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
-  //   load();
-  // });
+  let remaining_steps = Math.round(needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours()));
+  console.log(Bangle.getHealthStatus("day").steps);
+  console.log(health_settings.stepGoal);
+  console.log(settings.reminder_start_time);
+  console.log(settings.reminder_stop_time);
+  console.log(new Date().getHours());
+  g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n steps to hit\n   your goal`, text_x, text_y);
+  return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
+    load();
+  });
 }
 
 function main() {
