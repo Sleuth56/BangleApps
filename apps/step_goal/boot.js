@@ -16,18 +16,18 @@ function step_goal_notif() {
     let steps_left = step_goal - current_steps;
     return steps_left / (end_hour - start_hour);
   }
-  
+
   function needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
     let test = steps_per_hour(0, step_goal, start_hour, end_hour);
     let hours_in = current_hour - start_hour;
-  
+
     return test * hours_in;
   }
-  
+
   function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
     let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
   
-    if (current_hour > end_hour) {
+    if (current_hour > end_hour-1) {
       return true;
     }
     if (needed_steps2 > current_steps) {
