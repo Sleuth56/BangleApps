@@ -58,7 +58,7 @@ function display_nag() {
   console.log(settings.reminder_start_time);
   console.log(settings.reminder_stop_time);
   console.log(new Date().getHours());
-  g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n steps to hit\n   your goal`, text_x, text_y);
+  g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n  steps this\n  hour to hit\n  your goal`, text_x, text_y);
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
     load();
   });
