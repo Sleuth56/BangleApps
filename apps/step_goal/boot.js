@@ -2,7 +2,7 @@ function step_goal_notif() {
   var health_settings = require("Storage").readJSON("health.json",1)||{};
   var settings = Object.assign({
     goal_enabled: true,
-    nag_enabled: true,
+    reminder_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21,
     has_triggered: false
@@ -39,11 +39,13 @@ function step_goal_notif() {
   }
 
   function step_reminder() {
-    if (!enough_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours())) {
-      load('step_goal.show_reminder.js');
-    }
-    else {
-      console.log("Step_goal: Stets for this hour are met.")
+    if (settings.reminder_enabled) {
+      if (!enough_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours())) {
+        load('step_goal.show_reminder.js');
+      }
+      else {
+        console.log("Step_goal: Stets for this hour are met.")
+      }
     }
   }
 
@@ -87,9 +89,10 @@ function step_goal_notif() {
 function step_goal_reset() {
   var settings = Object.assign({
     goal_enabled: true,
-    nag_enabled: true,
+    reminder_enabled: true,
     reminder_start_time: 9,
-    reminder_stop_time: 21
+    reminder_stop_time: 21,
+    has_triggered: false
   }, require("Storage").readJSON("step_goal.json", true) || {});
   
   function setSettings() {
