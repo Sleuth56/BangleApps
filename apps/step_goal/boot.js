@@ -79,7 +79,7 @@ function step_goal_notif() {
   let now = new Date();
   let show_reminder_minute = 50;
   let seconds_left = (60-now.getSeconds())+(show_reminder_minute-now.getMinutes())*60;
-  // setTimeout(step_reminder, seconds_left*1000);
+  if (seconds_left > 1) {setTimeout(step_reminder, seconds_left*1000);}
 }
 
 // Resets the has_triggered step goal
