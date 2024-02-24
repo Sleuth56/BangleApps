@@ -72,7 +72,7 @@ function step_goal_notif() {
 
   function start_on_the_hour() {
     step_reminder();
-    setInterval(step_reminder, 3600000);
+    setInterval(start_on_the_hour, 3600000);
   }
 
   // Make it so we run the function that resets the has_triggered var so we can run again the next day.
