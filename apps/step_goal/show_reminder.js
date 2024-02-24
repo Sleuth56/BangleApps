@@ -66,6 +66,7 @@ function display_reminder() {
 
 function main() {
   display_reminder();
+  console.log("HI");
 }
 
 main();
