@@ -9,3 +9,4 @@
 0.09: Add hourly step goal reminder when you don't get enough steps.
 0.10: Bug fix could trigger one hour after stop time and show reminder screen on app open.
 0.11: Fix reminder screen not respecting settings toggle. Reword reminder screen.
+0.12: Fix step reminder occasionally not showing.
