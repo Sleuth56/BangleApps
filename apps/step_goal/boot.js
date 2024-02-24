@@ -77,7 +77,8 @@ function step_goal_notif() {
   setInterval(check_step_goal, 60000);
   
   let now = new Date();
-  let show_reminder_minute = 50;
+  // let show_reminder_minute = 50;
+  let show_reminder_minute = 20;
   let seconds_left = (60-now.getSeconds())+(show_reminder_minute-now.getMinutes())*60;
   setTimeout(step_reminder, seconds_left*1000);
 }
