@@ -46,6 +46,7 @@ function step_goal_notif() {
       else {
         console.log("Step_goal: Steps for this hour are met.")
       }
+      setInterval(step_reminder, 3600000);
     }
   }
 
@@ -70,11 +71,6 @@ function step_goal_notif() {
     }
   }
 
-  function start_on_the_hour() {
-    step_reminder();
-    setInterval(start_on_the_hour, 3600000);
-  }
-
   // Make it so we run the function that resets the has_triggered var so we can run again the next day.
   Bangle.on('midnight', function() { step_goal_reset(); });
   check_step_goal();
@@ -83,7 +79,7 @@ function step_goal_notif() {
   let now = new Date();
   let show_reminder_minute = 50;
   let seconds_left = (60-now.getSeconds())+(show_reminder_minute-now.getMinutes())*60;
-  setTimeout(start_on_the_hour, seconds_left*1000);
+  setTimeout(step_reminder, seconds_left*1000);
 }
 
 // Resets the has_triggered step goal

@@ -24,7 +24,7 @@ function enough_steps(current_steps, step_goal, start_hour, end_hour, current_ho
   }
 }
 
-function display_nag() {
+function display_reminder() {
   var settings = Object.assign({
     goal_enabled: true,
     reminder_enabled: true,
@@ -65,7 +65,7 @@ function display_nag() {
 }
 
 function main() {
-  display_nag();
+  display_reminder();
 }
 
 main();
