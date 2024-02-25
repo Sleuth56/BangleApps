@@ -44,7 +44,7 @@ function step_goal_notif() {
         load('step_goal.show_reminder.js');
       }
       else {
-        console.log("Step_goal: Steps for this hour are met.")
+        console.log("Step_goal: Steps for this hour are met.");
       }
       setInterval(step_reminder, 3600000);
     }
