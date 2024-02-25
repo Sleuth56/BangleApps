@@ -26,7 +26,7 @@ function step_goal_notif() {
 
   function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
     let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
-  
+
     if (current_hour > end_hour-1) {
       return true;
     }
@@ -75,7 +75,7 @@ function step_goal_notif() {
   Bangle.on('midnight', function() { step_goal_reset(); });
   check_step_goal();
   setInterval(check_step_goal, 60000);
-  
+
   let now = new Date();
   let show_reminder_minute = 50;
   let seconds_left = (60-now.getSeconds())+(show_reminder_minute-now.getMinutes())*60;
