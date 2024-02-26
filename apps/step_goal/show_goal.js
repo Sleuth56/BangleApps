@@ -23,10 +23,10 @@ function display_graphic() {
     require("Storage").writeJSON("step_goal.json", settings);
   }
   var health_settings = require("Storage").readJSON("health.json",1)||{};
-  const text_y = 40;
-  const text_x = 10;
-  const steps_text_y = 110;
-  const steps_text_x = 60;
+  const text_y = 80;
+  const text_x = 80;
+  const steps_text_y = 130;
+  const steps_text_x = 90;
   const timeout = 2000;
 
   // Turn on the screen
@@ -37,7 +37,7 @@ function display_graphic() {
   g.clear();
   g.setFont("6x8:2x3");
   g.setColor(1, 1, 1);
-  g.drawString(" You made it\nto your goal!", text_x, text_y);
+  g.drawString(" You made it\n to your goal!", text_x, text_y);
   g.setColor(1, 0, 0);
   g.drawString(`${health_settings.stepGoal-1}`, steps_text_x, steps_text_y);
 
@@ -47,14 +47,14 @@ function display_graphic() {
 
   // Screen animation
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
-    g.clearRect(steps_text_x, steps_text_y, 200, 300);
+    g.clearRect(0, 110, 500, 500);
     g.setColor(0, 1, 1);
     g.setFont("6x8:2x3");
     g.drawString(`${health_settings.stepGoal}`, steps_text_x, steps_text_y);
   }).then(()=>{
     return new Promise(resolve=>setTimeout(resolve,timeout*3));
   }).then(()=>{
-    load();
+    //load();
   });
 }
 

@@ -1,30 +1,16 @@
-function steps_per_hour(current_steps, step_goal, start_hour, end_hour) {
-  let steps_left = step_goal - current_steps;
-  return steps_left / (end_hour - start_hour);
+function buz_watch() {
+  Bangle.buzz(1000, 0.1).then(()=>{
+  return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+  }).then(()=>{
+    return Bangle.buzz(1000, 1);
+  }).then(()=>{
+    return new Promise(resolve=>setTimeout(resolve,500)); // wait 500ms
+  }).then(()=>{
+    return Bangle.buzz(1000, 0.1);
+  });
 }
 
-function needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-  let test = steps_per_hour(0, step_goal, start_hour, end_hour);
-  let hours_in = current_hour - start_hour;
-
-  return test * hours_in;
-}
-
-function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-  let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
-
-  if (current_hour > end_hour) {
-    return true;
-  }
-  if (needed_steps2 > current_steps) {
-    return false;
-  }
-  else {
-    return true;
-  }
-}
-
-function display_reminder() {
+function display_graphic() {
   var settings = Object.assign({
     goal_enabled: true,
     reminder_enabled: true,
@@ -37,11 +23,11 @@ function display_reminder() {
     require("Storage").writeJSON("step_goal.json", settings);
   }
   var health_settings = require("Storage").readJSON("health.json",1)||{};
-  const text_y = 40;
-  const text_x = 10;
-  const steps_text_y = 110;
-  const steps_text_x = 0;
-  const timeout = 6000;
+  const text_y = 80;
+  const text_x = 80;
+  const steps_text_y = 130;
+  const steps_text_x = 90;
+  const timeout = 2000;
 
   // Turn on the screen
   Bangle.setOptions({backlightTimeout: 0}); // turn off the screen timeout
@@ -49,24 +35,32 @@ function display_reminder() {
   
   // Setup and display the base screen info
   g.clear();
-  Bangle.buzz(1000, 0.1);
   g.setFont("6x8:2x3");
   g.setColor(1, 1, 1);
-  let remaining_steps = Math.round(needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours()));
-  console.log(Bangle.getHealthStatus("day").steps);
-  console.log(health_settings.stepGoal);
-  console.log(settings.reminder_start_time);
-  console.log(settings.reminder_stop_time);
-  console.log(new Date().getHours());
-  g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n  steps this\n  hour to hit\n  your goal`, text_x, text_y);
+  g.drawString(" You made it\n to your goal!", text_x, text_y);
+  g.setColor(1, 0, 0);
+  g.drawString(`${health_settings.stepGoal-1}`, steps_text_x, steps_text_y);
+
+  // Set that we have shown the screen
+  settings.has_triggered = true;
+  setSettings();
+
+  // Screen animation
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
-    load();
+    g.clearRect(0, 110, 500, 500);
+    g.setColor(0, 1, 1);
+    g.setFont("6x8:2x3");
+    g.drawString(`${health_settings.stepGoal}`, steps_text_x, steps_text_y);
+  }).then(()=>{
+    return new Promise(resolve=>setTimeout(resolve,timeout*3));
+  }).then(()=>{
+    //load();
   });
 }
 
 function main() {
-  display_reminder();
-  console.log("HI");
+  display_graphic();
+  buz_watch();
 }
 
 main();
