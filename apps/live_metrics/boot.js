@@ -154,7 +154,7 @@
 
   function start() {
     main();
-    setInterval(main, update_interval_in_minutes*60*1000);
+    setInterval(main, settings.update_interval_in_minutes*60*1000);
   }
 
   function startup() {
