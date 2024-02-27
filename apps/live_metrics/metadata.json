@@ -1,0 +1,18 @@
+{ "id": "live_metrics",
+  "name": "Live Metrics",
+  "shortName":"Live Metrics",
+  "version":"0.01",
+  "description": "Uploads sensor data to a prometheus compatible database.",
+  "icon": "app.png",
+  "type": "bootloader",
+  "tags": "health",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "storage": [
+    {"name":"live_metrics.boot.js","url":"boot.js"},
+    {"name":"live_metrics.settings.js","url":"settings.js"}
+  ],
+  "data": [
+    {"name": "live_metrics.json"}
+  ]
+}
