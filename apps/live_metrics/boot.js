@@ -9,9 +9,6 @@
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
-  // const server_url = 'https://metrics.rexrobotics.org';
-  // const username = 'telegraf';
-  // const password = 'cMA4U5mwWXwbW3KjGLWTTUL';
   // let data = {};
   if (settings.bangle_id == '') {
     settings.bangle_id = NRF.getAddress().substr().substr(12).replace(':', '');
@@ -104,7 +101,7 @@
     Bangle.setHRMPower(true, "live_metrics");
     function _get_HRM(data) {
       if (data['confidence'] > 80) {
-        post_data(`banglejs_${settings.bangle_id}_HRM`, now_to_current_minute().getTime(), '', data['bpm']);
+        post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data['bpm'], settings.bangle_id]);
         Bangle.removeAllListeners('HRM');
         Bangle.setHRMPower(false, "live_metrics");
       }
@@ -123,35 +120,35 @@
   }
 
   function main() {
-    post_data(`banglejs_${settings.bangle_id}_steps`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("day").steps);
-    post_data(`banglejs_${settings.bangle_id}_battery`, now_to_current_minute().getTime(), '', E.getBattery());
-    post_data(`banglejs_${settings.bangle_id}_temperature`, now_to_current_minute().getTime(), '', E.getTemperature());
+    post_data(`banglejs_steps`, now_to_current_minute().getTime(), ',3:label:id', [Bangle.getHealthStatus("day").steps, settings.bangle_id]);
+    post_data(`banglejs_battery`, now_to_current_minute().getTime(), ',3:label:id', [E.getBattery(), settings.bangle_id]);
+    post_data(`banglejs_temperature`, now_to_current_minute().getTime(), ',3:label:id', [E.getTemperature(), settings.bangle_id]);
     
     // Send pressure and altitude measurements
     Bangle.getPressure().then(d=>{
-      post_data(`banglejs_${settings.bangle_id}_pressure`, now_to_current_minute().getTime(), '', d.pressure);
-      post_data(`banglejs_${settings.bangle_id}_altitude`, now_to_current_minute().getTime(), '', d.altitude);
+      post_data(`banglejs_pressure`, now_to_current_minute().getTime(), ',3:label:id', [d.pressure, settings.bangle_id]);
+      post_data(`banglejs_altitude`, now_to_current_minute().getTime(), ',3:label:id', [d.altitude, settings.bangle_id]);
     });
 
     // Are we on a charger?
     if (Bangle.isCharging() == true) {
       // Report that we are on a charger
-      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 1);
-      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [1, settings.bangle_id]);
+      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
     }
     // Is the watch not being worn?
     else if (!is_waring()) {
-      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
-      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
+      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
     }
     else {
       // Report that we are not on a charger
-      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
-      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 1);
+      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
+      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [1, settings.bangle_id]);
       // Send Heart Rate measurements
       post_HRM();
 
-      post_data(`banglejs_${settings.bangle_id}_movement`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("last").movement);
+      post_data(`banglejs_movement`, now_to_current_minute().getTime(), ',3:label:id', [Bangle.getHealthStatus("last").movement, settings.bangle_id]);
     }
   }
 
@@ -168,7 +165,9 @@
     setTimeout(start, ms_to_next_minute);
   }
 
-  startup();
+  if (settings.enabled) {
+    startup();
+  }
 })();
 
 // https://www.espruino.com/ReferenceBANGLEJS2#t_l_Bangle_midnight
