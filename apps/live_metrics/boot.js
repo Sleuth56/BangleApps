@@ -104,7 +104,7 @@
     Bangle.setHRMPower(true, "live_metrics");
     function _get_HRM(data) {
       if (data['confidence'] > 80) {
-        post_data(`${settings.bangle_id}_HRM`, now_to_current_minute().getTime(), '', data['bpm']);
+        post_data(`banglejs_${settings.bangle_id}_HRM`, now_to_current_minute().getTime(), '', data['bpm']);
         Bangle.removeAllListeners('HRM');
         Bangle.setHRMPower(false, "live_metrics");
       }
@@ -123,35 +123,35 @@
   }
 
   function main() {
-    post_data(`${settings.bangle_id}_steps`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("day").steps);
-    post_data(`${settings.bangle_id}_battery`, now_to_current_minute().getTime(), '', E.getBattery());
-    post_data(`${settings.bangle_id}_temperature`, now_to_current_minute().getTime(), '', E.getTemperature());
+    post_data(`banglejs_${settings.bangle_id}_steps`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("day").steps);
+    post_data(`banglejs_${settings.bangle_id}_battery`, now_to_current_minute().getTime(), '', E.getBattery());
+    post_data(`banglejs_${settings.bangle_id}_temperature`, now_to_current_minute().getTime(), '', E.getTemperature());
     
     // Send pressure and altitude measurements
     Bangle.getPressure().then(d=>{
-      post_data(`${settings.bangle_id}_pressure`, now_to_current_minute().getTime(), '', d.pressure);
-      post_data(`${settings.bangle_id}_altitude`, now_to_current_minute().getTime(), '', d.altitude);
+      post_data(`banglejs_${settings.bangle_id}_pressure`, now_to_current_minute().getTime(), '', d.pressure);
+      post_data(`banglejs_${settings.bangle_id}_altitude`, now_to_current_minute().getTime(), '', d.altitude);
     });
 
     // Are we on a charger?
     if (Bangle.isCharging() == true) {
       // Report that we are on a charger
-      post_data(`${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 1);
-      post_data(`${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 1);
+      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
     }
     // Is the watch not being worn?
     else if (!is_waring()) {
-      post_data(`${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
-      post_data(`${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 0);
     }
     else {
       // Report that we are not on a charger
-      post_data(`${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
-      post_data(`${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 1);
+      post_data(`banglejs_${settings.bangle_id}_charging`, now_to_current_minute().getTime(), '', 0);
+      post_data(`banglejs_${settings.bangle_id}_waring`, now_to_current_minute().getTime(), '', 1);
       // Send Heart Rate measurements
       post_HRM();
 
-      post_data(`${settings.bangle_id}_movement`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("last").movement);
+      post_data(`banglejs_${settings.bangle_id}_movement`, now_to_current_minute().getTime(), '', Bangle.getHealthStatus("last").movement);
     }
   }
 
