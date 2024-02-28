@@ -1,7 +1,7 @@
 { "id": "live_metrics",
   "name": "Live Metrics",
   "shortName":"Live Metrics",
-  "version":"0.04",
+  "version":"0.05",
   "description": "Uploads sensor data to a prometheus compatible database.",
   "icon": "app.png",
   "type": "bootloader",
