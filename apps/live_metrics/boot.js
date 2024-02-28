@@ -98,14 +98,21 @@
   }
 
   function post_HRM() {
-    Bangle.setHRMPower(true, "live_metrics");
-    function _get_HRM(data) {
-      if (data['confidence'] > 80) {
-        post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data['bpm'], settings.bangle_id]);
-        Bangle.setHRMPower(false, "live_metrics");
-      }
+    // Global HRM Check
+    if (typeof global.hrm !== 'undefined') {
+      post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [global.hrm.bpm, settings.bangle_id]);
     }
-    Bangle.on('HRM',_get_HRM);
+    // No global HRM
+    else {
+      Bangle.setHRMPower(true, "live_metrics");
+      function _get_HRM(data) {
+        if (data['confidence'] > 80) {
+          post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data['bpm'], settings.bangle_id]);
+          Bangle.setHRMPower(false, "live_metrics");
+        }
+      }
+      Bangle.on('HRM',_get_HRM);
+    }
   }
 
   function is_waring() {
