@@ -29,7 +29,6 @@ global.hrm = Object.assign({
           setSettings();
         }
       oldSetHRMPower(false, "global_hrm");
-      setInterval(updateHrm, settings.update_interval_in_minutes*60*1000);
       }
     }
     Bangle.on('HRM',_get_HRM);
@@ -37,6 +36,7 @@ global.hrm = Object.assign({
 
   if (settings.enabled) {
     updateHrm();
+    setInterval(updateHrm, settings.update_interval_in_minutes*60*1000);
   }
 
   // Disable setHRMPower so no other programs can use it
