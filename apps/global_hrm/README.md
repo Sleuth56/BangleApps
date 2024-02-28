@@ -14,7 +14,21 @@ The HRM sensor enable function is over written by this app to prevent other apps
 
 The following code snip-it will do that.
 ```javascript
-
+// Global HRM Check
+if (typeof global.hrm !== 'undefined') {
+  console.log(`${global.hrm.bpm}, ${global.hrm.confidence}`);
+}
+// No global HRM
+else {
+  Bangle.setHRMPower(true, "test");
+  function _get_HRM(data) {
+    if (data.confidence > 80) {
+      console.log(`${global.hrm.bpm}, ${global.hrm.confidence}`);
+      Bangle.setHRMPower(false, "test");
+    }
+  }
+  Bangle.on('HRM',_get_HRM);
+}
 ```
 
 #### Creator
