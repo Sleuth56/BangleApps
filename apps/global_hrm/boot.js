@@ -1,52 +1,42 @@
+global.hrm = Object.assign({
+    bpm: undefined,
+    confidence: 0
+});
+
 {
   const oldSetHRMPower = Bangle.setHRMPower;
-  let hrm;
   var settings = Object.assign({
     enabled: true,
     update_interval_in_minutes: 1,
-    bpm_confidence: 80
+    bpm_confidence: 80,
+    disable_HRM_lockout: false
   }, require("Storage").readJSON("global_hrm.json", true) || {});
-
-  Bangle.on('HRM', (hrm) => {
-      hrm.bpm = 101;
-      hrm.confidence = 100;
-  });
 
   let updateHrm = () => {
     oldSetHRMPower(true, "global_hrm");
     function _get_HRM(data) {
       if (data.confidence > settings.bpm_confidence) {
-        hrm = data;
+        global.hrm.bpm = data.bpm;
+        global.hrm.confidence = data.confidence;
         console.log(`Global HRM Update BPM: ${data.bpm} confidence: ${data.confidence}`);
-        Bangle.removeAllListeners('HRM');
         oldSetHRMPower(false, "global_hrm");
       }
     }
     Bangle.on('HRM',_get_HRM);
   };
-  // updateHrm();
 
-  let run = () => {
-    if (hrm != undefined) {
-      Bangle.removeAllListeners('HRM');
-      // console.log("Global HRM RAN!");
-      // console.log(hrm);
-      return { "bpm": 101, "confidence": 100 };
-    }
-    else {
-      return undefined;
-    }
-  };
+  if (settings.enabled) {
+    updateHrm();
+    setInterval(updateHrm, settings.update_interval_in_minutes*60*1000);
+  }
 
-  // override setHRMPower so we can run our code on HRM enable
+  // Disable setHRMPower so no other programs can use it
   Bangle.setHRMPower = function(on, id) {
-    if (on) {
-      if (settings.enabled) {
-      return on;
+    if (settings.enabled && settings.disable_HRM_lockout) {
+        return on;
     }
     else {
         return oldSetHRMPower(on, id);
       }
-    }
   };
 }

@@ -102,7 +102,6 @@
     function _get_HRM(data) {
       if (data['confidence'] > 80) {
         post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data['bpm'], settings.bangle_id]);
-        Bangle.removeAllListeners('HRM');
         Bangle.setHRMPower(false, "live_metrics");
       }
     }
