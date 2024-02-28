@@ -3,6 +3,10 @@ global.hrm = Object.assign({
   confidence: 0
 }, require("Storage").readJSON("global_hrm.json", true) || {});
 
+if (global.hrm.bpm !== "undefined") {
+  Bangle.emit("HRM", {"bpm": global.hrm, "confidence": global.confidence});
+}
+
 {
   const oldSetHRMPower = Bangle.setHRMPower;
   var settings = Object.assign({
@@ -25,6 +29,7 @@ global.hrm = Object.assign({
           global.hrm.confidence = data.confidence;
           settings.bpm = data.bpm;
           settings.confidence = data.confidence;
+          Bangle.emit("HRM", {"bpm": global.hrm, "confidence": global.confidence});
           console.log(`Global HRM Update BPM: ${data.bpm} confidence: ${data.confidence}`);
           setSettings();
         }
