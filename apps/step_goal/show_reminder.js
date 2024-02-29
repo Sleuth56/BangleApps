@@ -1,27 +1,11 @@
-function steps_per_hour(current_steps, step_goal, start_hour, end_hour) {
-  let steps_left = step_goal - current_steps;
-  return steps_left / (end_hour - start_hour);
+function steps_per_hour(step_goal, start_hour, end_hour) {
+  return Math.ceil(step_goal / (end_hour-start_hour));
 }
 
 function needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-  let test = steps_per_hour(0, step_goal, start_hour, end_hour);
-  let hours_in = current_hour - start_hour;
-
-  return test * hours_in;
-}
-
-function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-  let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
-
-  if (current_hour > end_hour) {
-    return true;
-  }
-  if (needed_steps2 > current_steps) {
-    return false;
-  }
-  else {
-    return true;
-  }
+  let _steps = steps_per_hour(step_goal, start_hour, end_hour);
+  let steps_needed_at_this_hour = _steps*(current_hour-start_hour);
+  return steps_needed_at_this_hour - current_steps;
 }
 
 function display_reminder() {
@@ -52,7 +36,7 @@ function display_reminder() {
   Bangle.buzz(1000, 0.1);
   g.setFont("6x8:2x3");
   g.setColor(1, 1, 1);
-  let remaining_steps = Math.round(needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours()));
+  let remaining_steps = needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours());
   console.log(Bangle.getHealthStatus("day").steps);
   console.log(health_settings.stepGoal);
   console.log(settings.reminder_start_time);

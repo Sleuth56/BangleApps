@@ -12,25 +12,23 @@ function step_goal_notif() {
     require("Storage").writeJSON("step_goal.json", settings);
   }
 
-  function steps_per_hour(current_steps, step_goal, start_hour, end_hour) {
-    let steps_left = step_goal - current_steps;
-    return steps_left / (end_hour - start_hour);
+  function steps_per_hour(step_goal, start_hour, end_hour) {
+    return Math.ceil(step_goal / (end_hour-start_hour));
   }
-
+  
   function needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-    let test = steps_per_hour(0, step_goal, start_hour, end_hour);
-    let hours_in = current_hour - start_hour;
-
-    return test * hours_in;
+    let _steps = steps_per_hour(step_goal, start_hour, end_hour);
+    let steps_needed_at_this_hour = _steps*(current_hour-start_hour);
+    return steps_needed_at_this_hour - current_steps;
   }
 
   function enough_steps(current_steps, step_goal, start_hour, end_hour, current_hour) {
-    let needed_steps2 = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
+    let _needed_steps = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
 
     if (current_hour > end_hour-1) {
       return true;
     }
-    if (needed_steps2 > current_steps) {
+    if (_needed_steps > 0) {
       return false;
     }
     else {
