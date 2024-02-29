@@ -37,8 +37,8 @@ function display_reminder() {
     require("Storage").writeJSON("step_goal.json", settings);
   }
   var health_settings = require("Storage").readJSON("health.json",1)||{};
-  const text_y = 85;
-  const text_x = 80;
+  const text_y = 40;
+  const text_x = 10;
   const steps_text_y = 110;
   const steps_text_x = 0;
   const timeout = 6000;
