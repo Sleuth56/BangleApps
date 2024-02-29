@@ -24,11 +24,11 @@
         headers: {'Authorization': `Basic ${creds}`},
         method: method,
         body: body
-      }).then(data=>{
-        console.log("HTTP_Got ",data);
-        return resolve(data);
-      }).catch((err) => {
-        console.log("HTTP_ERROR: ", err.toString());
+      // }).then(data=>{
+      //   console.log("HTTP_Got ",data);
+      //   return resolve(data);
+      // }).catch((err) => {
+      //   console.log("HTTP_ERROR: ", err.toString());
       });
     });
   }
@@ -65,20 +65,20 @@
         headers: {'Authorization': `Basic ${btoa(creds)}`},
         method: "post",
         body: `${time},${values.toString()}`
-      }).then(data=>{
-        console.log("Got ",data);
-      }).catch((err) => {
-        console.log("Got ", err.toString());
+      // }).then(data=>{
+      //   console.log("Got ",data);
+      // }).catch((err) => {
+      //   console.log("Got ", err.toString());
       });
     }
     else {
       Bangle.http(url, {
         method: "post",
         body: `${time},${values.toString()}`
-      }).then(data=>{
-        console.log("Got ",data);
-      }).catch((err) => {
-        console.log("Got ", err.toString());
+      // }).then(data=>{
+      //   console.log("Got ",data);
+      // }).catch((err) => {
+      //   console.log("Got ", err.toString());
       });
     }
   }
@@ -87,14 +87,6 @@
     let coeff = 1000 * 60 * 1;
     let now = new Date();
     return new Date(Math.round(now.getTime() / coeff) * coeff);
-  }
-
-  function get_pressure() {
-    Bangle.getPressure().then(d=>{
-      console.log(d);
-      return d;
-      // {temperature, pressure, altitude}
-    });
   }
 
   function post_HRM() {
