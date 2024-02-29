@@ -62,7 +62,6 @@ if (global.hrm.bpm !== "undefined") {
     let delay = global.hrm.time+(global.hrm.update_interval_in_minutes*60*1000)-Math.round(new Date().getTime());
     if (global.hrm.time == "undefined" || delay < 0) {run();}
     else {
-      console.log(delay);
       setTimeout(run, delay);
     }
   }
