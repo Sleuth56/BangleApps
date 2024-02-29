@@ -16,3 +16,4 @@
 0.16: Fix step screen taking watch hostage.
 0.17: Update code so graphics display correctly.
 0.18: Fix mixup screens.
+0.19: Make bootloader app.
