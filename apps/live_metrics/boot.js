@@ -1,4 +1,4 @@
-(function () {
+var live_metrics = (function () {
   var settings = Object.assign({
     enabled: false,
     update_interval_in_minutes: 1,
@@ -9,53 +9,34 @@
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
-  // let data = {};
-  if (settings.bangle_id == '') {
-    settings.bangle_id = NRF.getAddress().substr().substr(12).replace(':', '');
-  }
-
-  // http(`${settings.server_url}/health`, 'get', '').then(resp => {
-  //   let test = resp.resp;
-  //   console.log(`hi: ${test}`);
-  // });
   function http(url, method, body) {
+    let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
     return new Promise(resolve => {
       Bangle.http(url, {
-        headers: {'Authorization': `Basic ${creds}`},
+        headers: {'Authorization': `Basic ${btoa(creds)}`},
         method: method,
         body: body
-      // }).then(data=>{
-      //   console.log("HTTP_Got ",data);
-      //   return resolve(data);
-      // }).catch((err) => {
-      //   console.log("HTTP_ERROR: ", err.toString());
+      }).then(data=>{
+        // console.log("HTTP_Got ",data);
+        return resolve(data);
+      }).catch((err) => {
+        console.log("HTTP_ERROR: ", err.toString());
       });
     });
   }
 
-  // check_connectivity().then(resp => {
-  //   console.log(resp);
-  // });
   function check_connectivity() {
     return new Promise(resolve => {
     http(`${settings.server_url}/health`, 'get', '').then(resp => {
         if (resp.resp == "OK") {
-          return resolve(1);
+          return resolve(true);
         }
         else {
-          return resolve(0);
+          return resolve(false);
         }
       });
     });
   }
-
-  // function post_data(metric, time, additional_fields, values) {
-  //   http(`${settings.server_url}/api/v1/import/csv?format=1:time:unix_ms,2:metric:${metric}${additional_fields}`, 
-  //   'post', 
-  //   `${time},${values.toString()}`).then(resp => {
-  //     console.log(resp);
-  //   });
-  // }
 
   function post_data(metric, time, additional_fields, values) {
     let url = `${settings.server_url}/api/v1/import/csv?format=1:time:unix_ms,2:metric:${metric}${additional_fields}`;
@@ -91,16 +72,16 @@
 
   function post_HRM() {
     // Global HRM Check
-    if (typeof global.hrm !== 'undefined') {
+    if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
       post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [global.hrm.bpm, settings.bangle_id]);
     }
     // No global HRM
     else {
       Bangle.setHRMPower(true, "live_metrics");
       function _get_HRM(data) {
-        if (data['confidence'] > 80) {
-          post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data['bpm'], settings.bangle_id]);
+        if (data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
+          post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data.bpm, settings.bangle_id]);
         }
       }
       Bangle.on('HRM',_get_HRM);
@@ -117,7 +98,81 @@
     }
   }
 
+  let data = {};
+
+  function test(d) {
+    data[now]['banglejs_pressure'] = d.pressure;
+    data[now]['banglejs_altitude'] = d.altitude;
+  }
+
+  function gather_data() {
+    now = now_to_current_minute().getTime();
+    
+    // Get sensor data
+    data[now] = {};
+    data[now]['banglejs_steps'] = Bangle.getHealthStatus("day").steps;
+    data[now]['banglejs_battery'] = E.getBattery();
+    data[now]['banglejs_temperature'] = E.getTemperature();
+
+    Bangle.getPressure().then(test);
+
+    Bangle.getPressure().then(d=>{
+      data[now]['banglejs_pressure'] = d.pressure;
+      data[now]['banglejs_altitude'] = d.altitude;
+    });
+
+    if (Bangle.isCharging() == true) {
+      // Report that we are on a charger
+      data[now]['banglejs_charging'] = 1;
+      data[now]['banglejs_waring'] = 0;
+    }
+    // Is the watch not being worn?
+    else if (!is_waring()) {
+      data[now]['banglejs_charging'] = 0;
+      data[now]['banglejs_waring'] = 0;
+    }
+    else {
+      // Report that we are not on a charger
+      data[now]['banglejs_charging'] = 0;
+      data[now]['banglejs_waring'] = 1;
+
+      // Send Heart Rate measurements
+      // Global HRM Check
+      if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
+        data[now]['banglejs_HRM'] = global.hrm.bpm;
+      }
+      // No global HRM
+      else {
+        Bangle.setHRMPower(true, "live_metrics");
+        function _get_HRM(data) {
+          if (data.confidence > 80) {
+            data[now]['banglejs_HRM'] = data.bpm;
+            Bangle.setHRMPower(false, "live_metrics");
+          }
+        }
+        Bangle.on('HRM',_get_HRM);
+      }
+      
+      data[now]['banglejs_movement'] = Bangle.getHealthStatus("last").movement;
+    }
+
+    console.log(data);
+    return data;
+  }
+
   function main() {
+    // Check connectivity
+    live_metrics.check_connectivity().then(is_connected => {
+      if (is_connected) {
+        
+      }
+      else {
+  
+      }
+    });
+  }
+
+  function old_main() {
     post_data(`banglejs_steps`, now_to_current_minute().getTime(), ',3:label:id', [Bangle.getHealthStatus("day").steps, settings.bangle_id]);
     post_data(`banglejs_battery`, now_to_current_minute().getTime(), ',3:label:id', [E.getBattery(), settings.bangle_id]);
     post_data(`banglejs_temperature`, now_to_current_minute().getTime(), ',3:label:id', [E.getTemperature(), settings.bangle_id]);
@@ -151,11 +206,14 @@
   }
 
   function start() {
-    main();
-    setInterval(main, settings.update_interval_in_minutes*60*1000);
+    old_main();
+    setInterval(old_main, settings.update_interval_in_minutes*60*1000);
   }
 
   function startup() {
+    if (settings.bangle_id == '') {
+      settings.bangle_id = NRF.getAddress().substr().substr(12).replace(':', '');
+    }
     // Calculate time till next run time
     let now = new Date();
     ms_to_next_minute = (60 - now.getSeconds()) * 1000 + (settings.update_interval_in_minutes-1)*60*1000;
@@ -164,8 +222,18 @@
   }
 
   if (settings.enabled) {
+    gather_data();
     startup();
   }
+  else {
+    delete settings;
+  }
+
+  return {
+    settings,
+    http,
+    check_connectivity
+  };
 })();
 
 // https://www.espruino.com/ReferenceBANGLEJS2#t_l_Bangle_midnight
