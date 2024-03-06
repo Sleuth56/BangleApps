@@ -33,12 +33,12 @@ global.hrm = Object.assign({
       }
     }
     Bangle.on('HRM',_get_HRM);
-  };
+  }
 
   function run() {
     updateHrm();
     setInterval(updateHrm, global.hrm.update_interval_in_minutes*60*1000);
-  };
+  }
 
   // When enabled update HRM value than do it again when it's time
   if (global.hrm.enabled) {
