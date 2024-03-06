@@ -13,7 +13,7 @@ The HRM sensor enable function is over written by this app to prevent other apps
 The following snip-it of code is an example of how to patch an app to work with global hrm.
 ```javascript
 // Global HRM Check
-if (typeof global.hrm !== 'undefined') {
+if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
   console.log(`${global.hrm.bpm}, ${global.hrm.confidence}`);
 }
 // No global HRM
