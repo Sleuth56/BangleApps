@@ -4,26 +4,10 @@ global.hrm = Object.assign({
   confidence: 0
 }, require("Storage").readJSON("global_hrm.json", true) || {});
 
-// Load and emit the saved HRM value
-if (global.hrm.bpm !== "undefined") {
-  Bangle.emit("HRM", {"bpm": global.hrm.bpm, "confidence": global.hrm.confidence});
-}
-{
-  // Save the old setHRMPower function so we can use it
-  Bangle.oldSetHRMPower = Bangle.setHRMPower;
-  // Disable setHRMPower so no other programs can use it
-  Bangle.setHRMPower = function(on, id) {
-    if (global.hrm.enabled && !global.hrm.disable_HRM_lockout) {
-        return on;
-    }
-    // If we are disabled or the lockout is disabled do a passthrough to the original function
-    else {
-        return Bangle.oldSetHRMPower(on, id);
-      }
-  };
+(function () {
   // Turns on the HRM sensor than waits till the confidence value is above the user specified value
   // Than records it to the global variable and to a file. We also emit a HRM event so everything updates to our new value
-  let updateHrm = () => {
+  function updateHrm() {
     Bangle.oldSetHRMPower(true, "global_hrm");
     function _get_HRM(data) {
       // Check if we are over the confidence value and that bpm isn't 0. 
@@ -51,13 +35,29 @@ if (global.hrm.bpm !== "undefined") {
     Bangle.on('HRM',_get_HRM);
   };
 
-  let run = () => {
+  function run() {
     updateHrm();
     setInterval(updateHrm, global.hrm.update_interval_in_minutes*60*1000);
   };
 
   // When enabled update HRM value than do it again when it's time
   if (global.hrm.enabled) {
+    // Load and emit the saved HRM value
+    if (global.hrm.bpm !== "undefined") {
+      Bangle.emit("HRM", {"bpm": global.hrm.bpm, "confidence": global.hrm.confidence});
+    }
+    // Save the old setHRMPower function so we can use it
+    Bangle.oldSetHRMPower = Bangle.setHRMPower;
+    // Disable setHRMPower so no other programs can use it
+    Bangle.setHRMPower = function(on, id) {
+      if (global.hrm.enabled && !global.hrm.disable_HRM_lockout) {
+          return on;
+      }
+      // If we are disabled or the lockout is disabled do a passthrough to the original function
+      else {
+          return Bangle.oldSetHRMPower(on, id);
+        }
+    };
     // Check if we haven't ran before and if so run immediately.
     let delay = global.hrm.time+(global.hrm.update_interval_in_minutes*60*1000)-Math.round(new Date().getTime());
     if (global.hrm.time == "undefined" || delay < 0) {run();}
@@ -65,4 +65,7 @@ if (global.hrm.bpm !== "undefined") {
       setTimeout(run, delay);
     }
   }
-}
+  else {
+    delete global.hrm;
+  }
+})();
