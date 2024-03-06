@@ -11,8 +11,8 @@
     
     <h4>Basic Auth</h4>
     <p>Enabled: <input type="checkbox" id="auth_enabled"></p>
-    <p>Username<br><input id="auth_username" style="width:50%"></p>
-    <p>Password<br><input id="auth_password" style="width:50%"></p>
+    <p>Username<br><input id="basic_auth_password" style="width:50%"></p>
+    <p>Password<br><input id="basic_auth_username" style="width:50%"></p>
 
     <button id="upload" class="btn btn-primary">Save key</button>
 
@@ -27,13 +27,13 @@
               if(data){
                 settings = data;
                 console.log("Got settings", settings);
-                document.getElementById("enabled").value = settings.enabled;
+                document.getElementById("enabled").value = 0;
                 document.getElementById("server_url").value = settings.server_url;
                 document.getElementById("update_interval_in_minutes").value = settings.update_interval_in_minutes;
                 document.getElementById("bangle_id").value = settings.bangle_id;
-                document.getElementById("auth_enabled").value = settings.auth_enabled;
-                document.getElementById("auth_username").value = settings.auth_username;
-                document.getElementById("auth_password").value = settings.auth_password;
+                document.getElementById("auth_enabled").value = 1;
+                document.getElementById("basic_auth_password").value = settings.basic_auth_password;
+                document.getElementById("basic_auth_username").value = settings.basic_auth_username;
               }
             });
           } catch(ex) {
