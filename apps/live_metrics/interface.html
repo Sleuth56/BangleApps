@@ -27,11 +27,11 @@
               if(data){
                 settings = data;
                 console.log("Got settings", settings);
-                document.getElementById("enabled").value = 0;
+                document.getElementById("enabled").checked = settings.enabled;
                 document.getElementById("server_url").value = settings.server_url;
                 document.getElementById("update_interval_in_minutes").value = settings.update_interval_in_minutes;
                 document.getElementById("bangle_id").value = settings.bangle_id;
-                document.getElementById("auth_enabled").value = 1;
+                document.getElementById("auth_enabled").checked = settings.enable_basic_auth;
                 document.getElementById("basic_auth_password").value = settings.basic_auth_password;
                 document.getElementById("basic_auth_username").value = settings.basic_auth_username;
               }
