@@ -8,6 +8,7 @@
   "tags": "health",
   "supports" : ["BANGLEJS2"],  
   "readme": "README.md",
+  "custom": "interface.html",
   "storage": [
     {"name":"live_metrics.boot.js","url":"boot.js"},
     {"name":"live_metrics.settings.js","url":"settings.js"}
