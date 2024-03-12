@@ -9,6 +9,9 @@ var live_metrics = (function () {
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
+  var now = 0;
+  var data = require("Storage").readJSON("live_metrics.data.json", true) || {};
+
   function http(url, method, body) {
     let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
     return new Promise(resolve => {
@@ -21,6 +24,7 @@ var live_metrics = (function () {
         return resolve(data);
       }).catch((err) => {
         console.log("HTTP_ERROR: ", err.toString());
+        return resolve(undefined);
       });
     });
   }
@@ -28,13 +32,16 @@ var live_metrics = (function () {
   function check_connectivity() {
     return new Promise(resolve => {
     http(`${settings.server_url}/health`, 'get', '').then(resp => {
-        if (resp.resp == "OK") {
+        if (resp != undefined && resp.resp == "OK") {
           return resolve(true);
         }
         else {
           return resolve(false);
         }
-      });
+      }).catch((err) => {
+          console.log("Got ", err.toString());
+          return resolve(false);
+        });
     });
   }
 
@@ -46,20 +53,20 @@ var live_metrics = (function () {
         headers: {'Authorization': `Basic ${btoa(creds)}`},
         method: "post",
         body: `${time},${values.toString()}`
-      // }).then(data=>{
-      //   console.log("Got ",data);
-      // }).catch((err) => {
-      //   console.log("Got ", err.toString());
+      }).then(data=>{
+        console.log("Got ",data);
+      }).catch((err) => {
+        console.log("Got ", err.toString());
       });
     }
     else {
       Bangle.http(url, {
         method: "post",
         body: `${time},${values.toString()}`
-      // }).then(data=>{
-      //   console.log("Got ",data);
-      // }).catch((err) => {
-      //   console.log("Got ", err.toString());
+      }).then(data=>{
+        console.log("Got ",data);
+      }).catch((err) => {
+        console.log("Got ", err.toString());
       });
     }
   }
@@ -68,24 +75,6 @@ var live_metrics = (function () {
     let coeff = 1000 * 60 * 1;
     let now = new Date();
     return new Date(Math.round(now.getTime() / coeff) * coeff);
-  }
-
-  function post_HRM() {
-    // Global HRM Check
-    if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
-      post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [global.hrm.bpm, settings.bangle_id]);
-    }
-    // No global HRM
-    else {
-      Bangle.setHRMPower(true, "live_metrics");
-      function _get_HRM(data) {
-        if (data.confidence > 80) {
-          Bangle.setHRMPower(false, "live_metrics");
-          post_data(`banglejs_HRM`, now_to_current_minute().getTime(), ',3:label:id', [data.bpm, settings.bangle_id]);
-        }
-      }
-      Bangle.on('HRM',_get_HRM);
-    }
   }
 
   function is_waring() {
@@ -97,29 +86,15 @@ var live_metrics = (function () {
       return 0;
     }
   }
-
-  let data = {};
-
-  function test(d) {
-    data[now]['banglejs_pressure'] = d.pressure;
-    data[now]['banglejs_altitude'] = d.altitude;
-  }
-
+  
   function gather_data() {
     now = now_to_current_minute().getTime();
-    
+    data = require("Storage").readJSON("live_metrics.data.json", true) || {};
     // Get sensor data
     data[now] = {};
     data[now]['banglejs_steps'] = Bangle.getHealthStatus("day").steps;
     data[now]['banglejs_battery'] = E.getBattery();
     data[now]['banglejs_temperature'] = E.getTemperature();
-
-    Bangle.getPressure().then(test);
-
-    Bangle.getPressure().then(d=>{
-      data[now]['banglejs_pressure'] = d.pressure;
-      data[now]['banglejs_altitude'] = d.altitude;
-    });
 
     if (Bangle.isCharging() == true) {
       // Report that we are on a charger
@@ -135,82 +110,77 @@ var live_metrics = (function () {
       // Report that we are not on a charger
       data[now]['banglejs_charging'] = 0;
       data[now]['banglejs_waring'] = 1;
-
-      // Send Heart Rate measurements
-      // Global HRM Check
-      if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
-        data[now]['banglejs_HRM'] = global.hrm.bpm;
-      }
-      // No global HRM
-      else {
-        Bangle.setHRMPower(true, "live_metrics");
-        function _get_HRM(data) {
-          if (data.confidence > 80) {
-            data[now]['banglejs_HRM'] = data.bpm;
-            Bangle.setHRMPower(false, "live_metrics");
-          }
-        }
-        Bangle.on('HRM',_get_HRM);
-      }
       
+      // Movement
       data[now]['banglejs_movement'] = Bangle.getHealthStatus("last").movement;
+      
+      // Barometer
+      Bangle.getPressure().then(barometer_data=>{
+        Bangle.emit("live_metrics_barometer", barometer_data);
+      });
     }
-
-    console.log(data);
-    return data;
   }
 
-  function main() {
+  function persist_barometer(barometer_data) {
+    data[now]['banglejs_pressure'] = barometer_data.pressure;
+    data[now]['banglejs_altitude'] = barometer_data.altitude;
+    get_HRM();
+  }
+
+  function get_HRM() {
+    // Global HRM Check
+    if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
+      data[now]['banglejs_HRM'] = global.hrm.bpm;
+      Bangle.emit("live_metrics_done");
+    }
+    // No global HRM
+    else {
+      Bangle.setHRMPower(true, "live_metrics");
+      function _get_HRM(data) {
+        if (data.confidence > 80) {
+          Bangle.setHRMPower(false, "live_metrics");
+          data[now]['banglejs_HRM'] = hrm.bpm;
+          Bangle.emit("live_metrics_done");
+        }
+      }
+      Bangle.on('HRM',_get_HRM);
+    }
+  }
+
+  function done() {
     // Check connectivity
-    live_metrics.check_connectivity().then(is_connected => {
+    check_connectivity().then(is_connected => {
       if (is_connected) {
-        
+        count = 0;
+        for (const time in data) {
+          console.log(`hello: ${time}`);
+          for (const metric in data[time]) {
+            setTimeout(function(metric, time, data, bangle_id) {
+              post_data(metric, time, ',3:label:id', [data[time][metric], bangle_id]);
+            }, (100*count)+1, metric, time, data, settings.bangle_id);
+          };
+          count += 1;
+        }
+        data = {};
+        // require("Storage").writeJSON("live_metrics.data.json", data);
       }
       else {
-  
+        // require("Storage").writeJSON("live_metrics.data.json", data);
       }
+      console.log(data);
     });
-  }
-
-  function old_main() {
-    post_data(`banglejs_steps`, now_to_current_minute().getTime(), ',3:label:id', [Bangle.getHealthStatus("day").steps, settings.bangle_id]);
-    post_data(`banglejs_battery`, now_to_current_minute().getTime(), ',3:label:id', [E.getBattery(), settings.bangle_id]);
-    post_data(`banglejs_temperature`, now_to_current_minute().getTime(), ',3:label:id', [E.getTemperature(), settings.bangle_id]);
-    
-    // Send pressure and altitude measurements
-    Bangle.getPressure().then(d=>{
-      post_data(`banglejs_pressure`, now_to_current_minute().getTime(), ',3:label:id', [d.pressure, settings.bangle_id]);
-      post_data(`banglejs_altitude`, now_to_current_minute().getTime(), ',3:label:id', [d.altitude, settings.bangle_id]);
-    });
-
-    // Are we on a charger?
-    if (Bangle.isCharging() == true) {
-      // Report that we are on a charger
-      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [1, settings.bangle_id]);
-      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
-    }
-    // Is the watch not being worn?
-    else if (!is_waring()) {
-      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
-      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
-    }
-    else {
-      // Report that we are not on a charger
-      post_data(`banglejs_charging`, now_to_current_minute().getTime(), ',3:label:id', [0, settings.bangle_id]);
-      post_data(`banglejs_waring`, now_to_current_minute().getTime(), ',3:label:id', [1, settings.bangle_id]);
-      // Send Heart Rate measurements
-      post_HRM();
-
-      post_data(`banglejs_movement`, now_to_current_minute().getTime(), ',3:label:id', [Bangle.getHealthStatus("last").movement, settings.bangle_id]);
-    }
   }
 
   function start() {
-    old_main();
-    setInterval(old_main, settings.update_interval_in_minutes*60*1000);
+    gather_data();
+    setInterval(gather_data, settings.update_interval_in_minutes*60*1000);
   }
 
-  function startup() {
+  if (settings.enabled) {
+    // Activate listeners
+    Bangle.on("live_metrics_barometer", persist_barometer);
+    Bangle.on("live_metrics_done", done);
+
     if (settings.bangle_id == '') {
       settings.bangle_id = NRF.getAddress().substr().substr(12).replace(':', '');
     }
@@ -220,21 +190,24 @@ var live_metrics = (function () {
 
     setTimeout(start, ms_to_next_minute);
   }
-
-  if (settings.enabled) {
-    gather_data();
-    startup();
-  }
   else {
     delete settings;
   }
 
   return {
+    done,
+    data,
+    gather_data,
     settings,
     http,
     check_connectivity
   };
 })();
+
+// live_metrics.gather_data();
+// live_metrics.data  for (const time in live_metrics.data) {console.log(time)}
+// live_metrics.check_connectivity().then(is_connected => {console.log(is_connected);});
+// live_metrics.done()
 
 // https://www.espruino.com/ReferenceBANGLEJS2#t_l_Bangle_midnight
 // Calls things at midnight could be useful to reset data points at midnight
