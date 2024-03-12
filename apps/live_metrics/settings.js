@@ -44,5 +44,9 @@
         setSettings();
       }
     },
+    "Delete history file": ()=>{
+      require("Storage").erase('live_metrics.data.json');
+      E.showMessage("Deleted data file");
+    }
   });
 });
