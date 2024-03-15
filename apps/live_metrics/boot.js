@@ -158,7 +158,7 @@ var live_metrics = (function () {
             setTimeout(function(metric, time, data, bangle_id) {
               post_data(metric, time, ',3:label:id', [data[time][metric], bangle_id]);
             }, (100*count)+1, metric, time, data, settings.bangle_id);
-          };
+          }
           count += 1;
         }
         data = {};
