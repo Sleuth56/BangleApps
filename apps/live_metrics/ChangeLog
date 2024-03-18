@@ -3,3 +3,4 @@
 0.03: Enable and disable and multi device work
 0.04: Fix bug where after we failed to run in the background
 0.05: Add global_HRM support
+0.06: Fix when global hrm wasn't present
