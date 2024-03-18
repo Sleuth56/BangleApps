@@ -1,7 +1,7 @@
 { "id": "global_hrm",
   "name": "Global HRM",
   "shortName":"Global HRM",
-  "version":"0.04",
+  "version":"0.05",
   "description": "A battery saving helper app that creates a global object with the current HRM and is updated on a user specified interval.",
   "icon": "app.png",
   "type": "bootloader",
