@@ -4,35 +4,35 @@ global.hrm = Object.assign({
   confidence: 0
 }, require("Storage").readJSON("global_hrm.json", true) || {});
 
-(function () {
+var global_hrm = (function () {
+  function _get_HRM(data) {
+    // Check if we are over the confidence value and that bpm isn't 0. 
+    // The over 0 check was cause of a strange case where the sensor would report a high confidence of a 0 bpm. Not sure why
+    if (data.confidence > global.hrm.bpm_confidence && data.bpm > 0) {
+      // Don't bother to change anything if the values are the same
+      if (data.bpm != global.hrm.bpm && data.confidence != global.hrm.confidence) {
+
+        // Save the HRM value to the global variable
+        global.hrm.bpm = data.bpm;
+        global.hrm.confidence = data.confidence;
+
+        // Log the time
+        global.hrm.time = Math.round(new Date().getTime());
+
+        // Emit an HRM event with our new values
+        Bangle.emit("HRM", {"bpm": global.hrm.bpm, "confidence": global.hrm.confidence});
+        console.log(`Global HRM Update BPM: ${data.bpm} confidence: ${data.confidence}`);
+        // Save our new values in case of a reload
+        require("Storage").writeJSON("global_hrm.json", global.hrm);
+      }
+      Bangle.oldSetHRMPower(false, "global_hrm");
+    }
+  }
+  Bangle.on('HRM',_get_HRM);
   // Turns on the HRM sensor than waits till the confidence value is above the user specified value
   // Than records it to the global variable and to a file. We also emit a HRM event so everything updates to our new value
   function updateHrm() {
     Bangle.oldSetHRMPower(true, "global_hrm");
-    function _get_HRM(data) {
-      // Check if we are over the confidence value and that bpm isn't 0. 
-      // The over 0 check was cause of a strange case where the sensor would report a high confidence of a 0 bpm. Not sure why
-      if (data.confidence > global.hrm.bpm_confidence && data.bpm > 0) {
-        // Don't bother to change anything if the values are the same
-        if (data.bpm != global.hrm.bpm && data.confidence != global.hrm.confidence) {
-
-          // Save the HRM value to the global variable
-          global.hrm.bpm = data.bpm;
-          global.hrm.confidence = data.confidence;
-
-          // Log the time
-          global.hrm.time = Math.round(new Date().getTime());
-
-          // Emit an HRM event with our new values
-          Bangle.emit("HRM", {"bpm": global.hrm.bpm, "confidence": global.hrm.confidence});
-          console.log(`Global HRM Update BPM: ${data.bpm} confidence: ${data.confidence}`);
-          // Save our new values in case of a reload
-          require("Storage").writeJSON("global_hrm.json", global.hrm);
-        }
-        Bangle.oldSetHRMPower(false, "global_hrm");
-      }
-    }
-    Bangle.on('HRM',_get_HRM);
   }
 
   function run() {
@@ -68,4 +68,9 @@ global.hrm = Object.assign({
   else {
     delete global.hrm;
   }
+
+  return {
+    updateHrm,
+    _get_HRM
+  };
 })();

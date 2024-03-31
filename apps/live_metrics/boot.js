@@ -136,10 +136,10 @@ var live_metrics = (function () {
     // No global HRM
     else {
       Bangle.setHRMPower(true, "live_metrics");
-      function _get_HRM(data) {
-        if (data.confidence > 80) {
+      function _get_HRM(hrm_data) {
+        if (hrm_data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
-          data[now]['banglejs_HRM'] = hrm.bpm;
+          data[now]['banglejs_HRM'] = hrm_data.bpm;
           Bangle.emit("live_metrics_done");
         }
       }
