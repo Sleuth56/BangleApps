@@ -39,7 +39,7 @@ function display_reminder() {
   console.log(new Date().getHours());
   g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n  steps this\n  hour to hit\n  your goal`, text_x, text_y);
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
-    load();
+    eval(require("Storage").read(require("Storage").readJSON("setting.json",1).clock));
   });
 }
 

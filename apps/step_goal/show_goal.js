@@ -54,7 +54,7 @@ function display_graphic() {
   }).then(()=>{
     return new Promise(resolve=>setTimeout(resolve,timeout*3));
   }).then(()=>{
-    load();
+    eval(require("Storage").read(require("Storage").readJSON("setting.json",1).clock));
   });
 }
 

@@ -39,7 +39,8 @@ function step_goal_notif() {
   function step_reminder() {
     if (settings.reminder_enabled) {
       if (!enough_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours())) {
-        load('step_goal.show_reminder.js');
+        reset();
+        eval(require("Storage").read("step_goal.show_reminder.js"));
       }
       else {
         console.log("Step_goal: Steps for this hour are met.");
@@ -54,7 +55,8 @@ function step_goal_notif() {
       // Check if we are at or over our step goal
       if (Bangle.getHealthStatus("day").steps >= health_settings.stepGoal && settings.goal_enabled == true) {
         // Trigger the message
-        load('step_goal.show_goal.js');
+        reset();
+        eval(require("Storage").read("step_goal.show_goal.js"));
       }
     }
     // If we have shown the screen
