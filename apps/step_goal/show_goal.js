@@ -35,7 +35,7 @@ function display_graphic() {
   
   // Setup and display the base screen info
   g.clear();
-  g.setFont("6x8:2x3");
+  g.setFont("Vector", 20);
   g.setColor(1, 1, 1);
   g.drawString(" You made it\nto your goal!", text_x, text_y);
   g.setColor(1, 0, 0);
@@ -49,11 +49,12 @@ function display_graphic() {
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
     g.clearRect(steps_text_x, steps_text_y, 200, 300);
     g.setColor(0, 1, 1);
-    g.setFont("6x8:2x3");
+    g.setFont("Vector", 20);
     g.drawString(`${health_settings.stepGoal}`, steps_text_x, steps_text_y);
   }).then(()=>{
     return new Promise(resolve=>setTimeout(resolve,timeout*3));
   }).then(()=>{
+    Bangle.setOptions({backlightTimeout: require("Storage").readJSON("setting.json",1).timeout});
     eval(require("Storage").read(require("Storage").readJSON("setting.json",1).clock));
   });
 }

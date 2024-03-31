@@ -29,7 +29,7 @@ function display_reminder() {
   // Setup and display the base screen info
   g.clear();
   Bangle.buzz(1000, 0.1);
-  g.setFont("6x8:2x3");
+  g.setFont("Vector", 60);
   g.setColor(1, 1, 1);
   let remaining_steps = needed_steps(Bangle.getHealthStatus("day").steps, health_settings.stepGoal, settings.reminder_start_time, settings.reminder_stop_time, new Date().getHours());
   console.log(Bangle.getHealthStatus("day").steps);
@@ -39,6 +39,7 @@ function display_reminder() {
   console.log(new Date().getHours());
   g.drawString(` ${remaining_steps.toString().padStart(8, ' ')}\n  steps this\n  hour to hit\n  your goal`, text_x, text_y);
   return new Promise(resolve=>setTimeout(resolve, timeout)).then(()=>{
+    Bangle.setOptions({backlightTimeout: require("Storage").readJSON("setting.json",1).timeout});
     eval(require("Storage").read(require("Storage").readJSON("setting.json",1).clock));
   });
 }
