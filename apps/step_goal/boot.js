@@ -5,7 +5,8 @@ let step_goal = (function () {
     reminder_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21,
-    has_triggered: false
+    has_triggered: false,
+    reminder_minute: 50
   }, require("Storage").readJSON("step_goal.json", true) || {});
 
   let setSettings = function() {
@@ -73,12 +74,13 @@ let step_goal = (function () {
   
   // Resets the has_triggered step goal
   let step_goal_reset = function() {
-    var settings = Object.assign({
+    let settings = Object.assign({
       goal_enabled: true,
       reminder_enabled: true,
       reminder_start_time: 9,
       reminder_stop_time: 21,
-      has_triggered: false
+      has_triggered: false,
+      reminder_minute: 50
     }, require("Storage").readJSON("step_goal.json", true) || {});
   
     let setSettings = function() {
@@ -94,8 +96,7 @@ let step_goal = (function () {
   setInterval(check_step_goal, 60000);
 
   let now = new Date();
-  let show_reminder_minute = 25;
-  let seconds_left = (60-now.getSeconds())+(show_reminder_minute-now.getMinutes())*60;
+  let seconds_left = (60-now.getSeconds())+(settings.reminder_minute-now.getMinutes())*60;
   if (seconds_left > 1) {setTimeout(step_reminder, seconds_left*1000);}
 
   return {

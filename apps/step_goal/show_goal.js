@@ -21,7 +21,8 @@
       reminder_enabled: true,
       reminder_start_time: 9,
       reminder_stop_time: 21,
-      has_triggered: false
+      has_triggered: false,
+      reminder_minute: 50
     }, require("Storage").readJSON("step_goal.json", true) || {});
   
     let setSettings = function() {

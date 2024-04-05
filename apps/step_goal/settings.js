@@ -1,10 +1,11 @@
 (function (back) {
-  var settings = Object.assign({
+  let settings = Object.assign({
     goal_enabled: true,
     reminder_enabled: true,
     reminder_start_time: 9,
     reminder_stop_time: 21,
-    has_triggered: false
+    has_triggered: false,
+    reminder_minute: 50
   }, require("Storage").readJSON("step_goal.json", true) || {});
 
   function setSettings() {
@@ -45,10 +46,22 @@
         setSettings();
       }
     },
+
     /*LANG*/"Step Goal Reminder": {
       value: "reminder_enabled" in settings ? settings.reminder_enabled : true,
       onchange: () => {
         settings.reminder_enabled = !settings.reminder_enabled;
+        setSettings();
+      }
+    },
+
+    /*LANG*/"Minute To Get Reminder": {
+      value: settings.reminder_minute,
+      min: 1,
+      max: 50,
+      step: 10,
+      onchange: v => {
+        settings.reminder_minute = v;
         setSettings();
       }
     },

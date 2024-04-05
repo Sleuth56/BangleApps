@@ -15,6 +15,16 @@ This app will alert you when you haven't gotten enough steps for the hour to hel
 4. Go for a walk.
 5. Get congratulated when you reach your step goal for the day.
 
+## Settings
+
+| Name | Description |
+| ---- | ----------- |
+| Reminder Start Hour    | This is the hour to start sending alerts |
+| Reminder Stop Hour     | The hour step reminders will last appear |
+| Step Goal Notification | Wether you want to get an alert when you hit your step goal |
+| Step Goal Reminder     | Whether you want to get notified when you didn't get enough steps to hit your goal |
+| Minute To Get Reminder | What minute of the hour do you want to receive your step reminders |
+
 ## Features
 
 Reminds you when you haven't gotten enough steps for the hour.
