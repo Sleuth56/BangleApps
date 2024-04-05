@@ -1,7 +1,11 @@
 // Create the global HRM object
 global.hrm = Object.assign({
   bpm: undefined,
-  confidence: 0
+  confidence: 0,
+  enabled: true,
+  update_interval_in_minutes: 1,
+  bpm_confidence: 80,
+  disable_HRM_lockout: false
 }, require("Storage").readJSON("global_hrm.json", true) || {});
 
 var global_hrm = (function () {
