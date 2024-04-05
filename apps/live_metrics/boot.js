@@ -153,7 +153,6 @@ var live_metrics = (function () {
       if (is_connected) {
         count = 0;
         for (const time in data) {
-          console.log(`hello: ${time}`);
           for (const metric in data[time]) {
             setTimeout(function(metric, time, data, bangle_id) {
               post_data(metric, time, ',3:label:id', [data[time][metric], bangle_id]);
