@@ -2,7 +2,10 @@
 
 This app will alert you when you haven't gotten enough steps for the hour to help you reach your step goal and will congratulate you when you reach your step goal.
 
-Add screen shots (if possible) to the app folder and link then into this file with ![](<name>.png)
+![Goal1](images/Goal1.png)
+![Goal2](images/Goal2.png)
+![Reminder1](images/Reminder1.png)
+![Reminder2](images/Reminder2.png)
 
 ## Usage
 
