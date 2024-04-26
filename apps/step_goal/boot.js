@@ -26,7 +26,7 @@ let step_goal = (function () {
   let enough_steps = function(current_steps, step_goal, start_hour, end_hour, current_hour) {
     let _needed_steps = needed_steps(current_steps, step_goal, start_hour, end_hour, current_hour);
 
-    if (current_hour > end_hour-1) {
+    if (current_hour >= end_hour-1) {
       return true;
     }
     if (_needed_steps > 0) {
