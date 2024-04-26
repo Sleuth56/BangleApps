@@ -57,7 +57,7 @@
 
     /*LANG*/"Minute To Get Reminder": {
       value: settings.reminder_minute,
-      min: 0,
+      min: 10,
       max: 50,
       step: 10,
       onchange: v => {
