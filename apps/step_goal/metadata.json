@@ -1,7 +1,7 @@
 { "id": "step_goal",
   "name": "Step Goal",
   "shortName":"Step Goal",
-  "version":"0.23",
+  "version":"0.24",
   "description": "Shows you when you hit your daily step goal.",
   "icon": "app.png",
   "tags": "health",
