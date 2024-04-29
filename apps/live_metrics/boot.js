@@ -62,12 +62,10 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   }
 
   function post_data(data) {
-    //data += '\n';
-    formatted_data = innumerate_data(data);
     console.log(data);
-    console.log(formatted_data);
     check_connectivity().then(is_connected => {
       if (is_connected) {
+        let formatted_data = innumerate_data(data);
         let url = `${settings.server_url}/api/v1/import/prometheus`;
         if (settings.enable_basic_auth) {
           let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
@@ -95,8 +93,8 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
       else {
         console.log("Not connected!");
         data += `\n`;
-        stored_data_append = require("Storage").open("live_metrics.cache","w");
-        // stored_data_append.write(data);
+        stored_data_append = require("Storage").open("live_metrics.cache","a");
+        stored_data_append.write(data);
       }
     });
   }
@@ -118,13 +116,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   }
 
   function gather_data(now) {
-    let data = '';
-    stored_data_read = require("Storage").open("live_metrics.cache","r");
-    const stored_data = stored_data_read.read(stored_data_read.getLength());
-    if (stored_data !== undefined) {
-      data = stored_data;
-    }
-    data += `${now},`;
+    let data = `${now},`;
 
     // Current steps
     data += `${Bangle.getHealthStatus("day").steps},`;
@@ -183,10 +175,48 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
     }
   }
 
+  // Returns a string of n number of lines from the specified file.
+  // If the file isn't that long than it returns the entire file.
+  function read_lines(file, line_count) {
+    let lines = '';
+    let line = file.readLine();
+
+    let loop = 1;
+    if (line === undefined) {
+      return undefined;
+    }
+    while (loop <= line_count && line !== undefined) {
+      lines += line;
+      line = file.readLine();
+      loop ++;
+    }
+    return lines;
+  }
+
   function start() {
     let now = now_to_current_minute().getTime();
     let data = gather_data(now);
     get_HRM(now, data);
+
+    // Run historical data
+    let stored_data_read = require("Storage").open("live_metrics.cache","r");
+    if (stored_data_read.readLine()) {
+      check_connectivity().then(is_connected => {
+        stored_data_read = require("Storage").open("live_metrics.cache","r");
+        if (is_connected) {
+          let lines = read_lines(stored_data_read, 30);
+          let count = 1;
+          while (lines !== undefined) {
+            setTimeout(function(lines) {
+              post_data(lines);
+            }, (500*count)+1, lines);
+            lines = read_lines(stored_data_read, 30);
+            count ++;
+          }
+          stored_data_read.erase();
+        }
+      });
+    }
   }
 
   if (settings.enabled) {
