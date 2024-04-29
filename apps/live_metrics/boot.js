@@ -202,11 +202,3 @@ var live_metrics = (function () {
     check_connectivity
   };
 })();
-
-// live_metrics.gather_data();
-// live_metrics.data  for (const time in live_metrics.data) {console.log(time)}
-// live_metrics.check_connectivity().then(is_connected => {console.log(is_connected);});
-// live_metrics.done()
-
-// https://www.espruino.com/ReferenceBANGLEJS2#t_l_Bangle_midnight
-// Calls things at midnight could be useful to reset data points at midnight
