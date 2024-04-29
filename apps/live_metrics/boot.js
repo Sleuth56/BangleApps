@@ -20,7 +20,7 @@ var live_metrics = (function () {
         method: method,
         body: body
       }).then(data=>{
-        // console.log("HTTP_Got ",data);
+        console.log("HTTP_Got ",data);
         return resolve(data);
       }).catch((err) => {
         console.log("HTTP_ERROR: ", err.toString());
