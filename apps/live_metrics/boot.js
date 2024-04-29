@@ -44,7 +44,27 @@ var live_metrics = (function () {
     });
   }
 
+  function innumerate_data(data) {
+    let output = '';
+    for (const line of data.split(`\n`)) {
+      let parsed_line = line.split(",");
+      output += `
+banglejs_steps{id="${settings.bangle_id}"} ${parsed_line[1]} ${parsed_line[0]}
+banglejs_battery{id="${settings.bangle_id}"} ${parsed_line[2]} ${parsed_line[0]}
+banglejs_temperature{id="${settings.bangle_id}"} ${parsed_line[3]} ${parsed_line[0]}
+banglejs_charging{id="${settings.bangle_id}"} ${parsed_line[4]} ${parsed_line[0]}
+banglejs_waring{id="${settings.bangle_id}"} ${parsed_line[5]} ${parsed_line[0]}
+banglejs_movement{id="${settings.bangle_id}"} ${parsed_line[6]} ${parsed_line[0]}
+banglejs_HRM{id="${settings.bangle_id}"} ${parsed_line[7]} ${parsed_line[0]}
+banglejs_pressure{id="${settings.bangle_id}"} ${parsed_line[8]} ${parsed_line[0]}
+banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]}
+`;
+    }
+    return output;
+  }
+
   function post_data(data) {
+    data = innumerate_data(data);
     console.log(data);
     check_connectivity().then(is_connected => {
       if (is_connected) {
@@ -74,6 +94,7 @@ var live_metrics = (function () {
       }
       else {
         console.log("Not connected!");
+        
       }
     });
   }
@@ -95,41 +116,41 @@ var live_metrics = (function () {
   }
 
   function gather_data(now) {
-    let data = ``;
+    let data = `${now},`;
 
     // Current steps
-    data += `banglejs_steps{id="${settings.bangle_id}"} ${Bangle.getHealthStatus("day").steps} ${now}\n`;
+    data += `${Bangle.getHealthStatus("day").steps},`;
     // Battery in percentage
-    data += `banglejs_battery{id="${settings.bangle_id}"} ${E.getBattery()} ${now}\n`;
+    data += `${E.getBattery()},`;
     // Temperature in C
-    data += `banglejs_temperature{id="${settings.bangle_id}"} ${E.getTemperature()} ${now}\n`;
+    data += `${E.getTemperature()},`;
 
     if (Bangle.isCharging() == true) {
       // Report that we are on a charger
-      data += `banglejs_charging{id="${settings.bangle_id}"} ${1} ${now}\n`;
-      data += `banglejs_waring{id="${settings.bangle_id}"} ${0} ${now}\n`;
+      data += `1,`;
+      data += `0,`;
     }
     // Is the watch not being worn?
     else if (!is_waring()) {
-      data += `banglejs_charging{id="${settings.bangle_id}"} ${0} ${now}\n`;
-      data += `banglejs_waring{id="${settings.bangle_id}"} ${0} ${now}\n`;
+      data += `0,`;
+      data += `0,`;
     }
     else {
       // Report that we are not on a charger
-      data += `banglejs_charging{id="${settings.bangle_id}"} ${0} ${now}\n`;
-      data += `banglejs_waring{id="${settings.bangle_id}"} ${1} ${now}\n`;
+      data += `0,`;
+      data += `1,`;
     }
 
     // Movement
-    data += `banglejs_movement{id="${settings.bangle_id}"} ${Bangle.getHealthStatus("last").movement} ${now}\n`;
+    data += `${Bangle.getHealthStatus("last").movement},`;
 
     return data;
   }
 
   function persist_barometer(now, data) {
     Bangle.getPressure().then(barometer_data=>{
-      data += `banglejs_pressure{id="${settings.bangle_id}"} ${barometer_data.pressure} ${now}\n`;
-      data += `banglejs_altitude{id="${settings.bangle_id}"} ${barometer_data.altitude} ${now}\n`;
+      data += `${Math.round(barometer_data.pressure)},`;
+      data += `${Math.round(barometer_data.altitude)},`;
       Bangle.emit("live_metrics_post_data", data);
     });
   }
@@ -137,7 +158,7 @@ var live_metrics = (function () {
   function get_HRM(now, data) {
     // Global HRM Check
     if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
-      data += `banglejs_HRM{id="${settings.bangle_id}"} ${global.hrm.bpm} ${now}\n`;
+      data += `${global.hrm.bpm},`;
       Bangle.emit("live_metrics_barometer", now, data);
     }
     // No global HRM
@@ -146,7 +167,7 @@ var live_metrics = (function () {
       function _get_HRM(hrm_data) {
         if (hrm_data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
-          data += `banglejs_HRM{id="${settings.bangle_id}"} ${hrm_data.bpm} ${now}\n`;
+          data += `${hrm_data.bpm},`;
           Bangle.emit("live_metrics_barometer", now, data);
         }
       }
