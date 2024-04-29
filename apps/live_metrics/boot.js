@@ -9,8 +9,6 @@ var live_metrics = (function () {
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
-  stored_data = require("Storage").open("live_metrics.cache","a");
-
   function http(url, method, body) {
     let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
     return new Promise(resolve => {
@@ -64,8 +62,10 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   }
 
   function post_data(data) {
-    data = innumerate_data(data);
+    //data += '\n';
+    formatted_data = innumerate_data(data);
     console.log(data);
+    console.log(formatted_data);
     check_connectivity().then(is_connected => {
       if (is_connected) {
         let url = `${settings.server_url}/api/v1/import/prometheus`;
@@ -74,7 +74,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
           Bangle.http(url, {
             headers: {'Authorization': `Basic ${btoa(creds)}`},
             method: "post",
-            body: data
+            body: formatted_data
           }).then(data=>{
             console.log("Got ",data);
           }).catch((err) => {
@@ -84,7 +84,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
         else {
           Bangle.http(url, {
             method: "post",
-            body: data
+            body: formatted_data
           }).then(data=>{
             console.log("Got ",data);
           }).catch((err) => {
@@ -94,7 +94,9 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
       }
       else {
         console.log("Not connected!");
-        
+        data += `\n`;
+        stored_data_append = require("Storage").open("live_metrics.cache","w");
+        // stored_data_append.write(data);
       }
     });
   }
@@ -116,7 +118,13 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   }
 
   function gather_data(now) {
-    let data = `${now},`;
+    let data = '';
+    stored_data_read = require("Storage").open("live_metrics.cache","r");
+    const stored_data = stored_data_read.read(stored_data_read.getLength());
+    if (stored_data !== undefined) {
+      data = stored_data;
+    }
+    data += `${now},`;
 
     // Current steps
     data += `${Bangle.getHealthStatus("day").steps},`;
@@ -147,7 +155,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
     return data;
   }
 
-  function persist_barometer(now, data) {
+  function persist_barometer(data) {
     Bangle.getPressure().then(barometer_data=>{
       data += `${Math.round(barometer_data.pressure)},`;
       data += `${Math.round(barometer_data.altitude)},`;
@@ -159,7 +167,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
     // Global HRM Check
     if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
       data += `${global.hrm.bpm},`;
-      Bangle.emit("live_metrics_barometer", now, data);
+      Bangle.emit("live_metrics_barometer", data);
     }
     // No global HRM
     else {
@@ -168,7 +176,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
         if (hrm_data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
           data += `${hrm_data.bpm},`;
-          Bangle.emit("live_metrics_barometer", now, data);
+          Bangle.emit("live_metrics_barometer", data);
         }
       }
       Bangle.on('HRM',_get_HRM);
@@ -203,7 +211,6 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
 
   return {
     settings,
-    stored_data,
     http,
     check_connectivity,
     post_data,
