@@ -9,8 +9,7 @@ var live_metrics = (function () {
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
-  var now = 0;
-  var data = require("Storage").readJSON("live_metrics.data.json", true) || {};
+  stored_data = require("Storage").open("live_metrics.cache","a");
 
   function http(url, method, body) {
     let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
@@ -45,30 +44,38 @@ var live_metrics = (function () {
     });
   }
 
-  function post_data(metric, time, additional_fields, values) {
-    let url = `${settings.server_url}/api/v1/import/csv?format=1:time:unix_ms,2:metric:${metric}${additional_fields}`;
-    if (settings.enable_basic_auth) {
-      let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
-      Bangle.http(url, {
-        headers: {'Authorization': `Basic ${btoa(creds)}`},
-        method: "post",
-        body: `${time},${values.toString()}`
-      }).then(data=>{
-        console.log("Got ",data);
-      }).catch((err) => {
-        console.log("Got ", err.toString());
-      });
-    }
-    else {
-      Bangle.http(url, {
-        method: "post",
-        body: `${time},${values.toString()}`
-      }).then(data=>{
-        console.log("Got ",data);
-      }).catch((err) => {
-        console.log("Got ", err.toString());
-      });
-    }
+  function post_data(data) {
+    console.log(data);
+    check_connectivity().then(is_connected => {
+      if (is_connected) {
+        let url = `${settings.server_url}/api/v1/import/prometheus`;
+        if (settings.enable_basic_auth) {
+          let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
+          Bangle.http(url, {
+            headers: {'Authorization': `Basic ${btoa(creds)}`},
+            method: "post",
+            body: data
+          }).then(data=>{
+            console.log("Got ",data);
+          }).catch((err) => {
+            console.log("Got ", err.toString());
+          });
+        }
+        else {
+          Bangle.http(url, {
+            method: "post",
+            body: data
+          }).then(data=>{
+            console.log("Got ",data);
+          }).catch((err) => {
+            console.log("Got ", err.toString());
+          });
+        }
+      }
+      else {
+        console.log("Not connected!");
+      }
+    });
   }
 
   function now_to_current_minute() {
@@ -86,52 +93,52 @@ var live_metrics = (function () {
       return 0;
     }
   }
-  
-  function gather_data() {
-    now = now_to_current_minute().getTime();
-    data = require("Storage").readJSON("live_metrics.data.json", true) || {};
-    // Get sensor data
-    data[now] = {};
-    data[now]['banglejs_steps'] = Bangle.getHealthStatus("day").steps;
-    data[now]['banglejs_battery'] = E.getBattery();
-    data[now]['banglejs_temperature'] = E.getTemperature();
+
+  function gather_data(now) {
+    let data = ``;
+
+    // Current steps
+    data += `banglejs_steps{id="${settings.bangle_id}"} ${Bangle.getHealthStatus("day").steps} ${now}\n`;
+    // Battery in percentage
+    data += `banglejs_battery{id="${settings.bangle_id}"} ${E.getBattery()} ${now}\n`;
+    // Temperature in C
+    data += `banglejs_temperature{id="${settings.bangle_id}"} ${E.getTemperature()} ${now}\n`;
 
     if (Bangle.isCharging() == true) {
       // Report that we are on a charger
-      data[now]['banglejs_charging'] = 1;
-      data[now]['banglejs_waring'] = 0;
+      data += `banglejs_charging{id="${settings.bangle_id}"} ${1} ${now}\n`;
+      data += `banglejs_waring{id="${settings.bangle_id}"} ${0} ${now}\n`;
     }
     // Is the watch not being worn?
     else if (!is_waring()) {
-      data[now]['banglejs_charging'] = 0;
-      data[now]['banglejs_waring'] = 0;
+      data += `banglejs_charging{id="${settings.bangle_id}"} ${0} ${now}\n`;
+      data += `banglejs_waring{id="${settings.bangle_id}"} ${0} ${now}\n`;
     }
     else {
       // Report that we are not on a charger
-      data[now]['banglejs_charging'] = 0;
-      data[now]['banglejs_waring'] = 1;
-      
-      // Movement
-      data[now]['banglejs_movement'] = Bangle.getHealthStatus("last").movement;
-      
-      // Barometer
-      Bangle.getPressure().then(barometer_data=>{
-        Bangle.emit("live_metrics_barometer", barometer_data);
-      });
+      data += `banglejs_charging{id="${settings.bangle_id}"} ${0} ${now}\n`;
+      data += `banglejs_waring{id="${settings.bangle_id}"} ${1} ${now}\n`;
     }
+
+    // Movement
+    data += `banglejs_movement{id="${settings.bangle_id}"} ${Bangle.getHealthStatus("last").movement} ${now}\n`;
+
+    return data;
   }
 
-  function persist_barometer(barometer_data) {
-    data[now]['banglejs_pressure'] = barometer_data.pressure;
-    data[now]['banglejs_altitude'] = barometer_data.altitude;
-    get_HRM();
+  function persist_barometer(now, data) {
+    Bangle.getPressure().then(barometer_data=>{
+      data += `banglejs_pressure{id="${settings.bangle_id}"} ${barometer_data.pressure} ${now}\n`;
+      data += `banglejs_altitude{id="${settings.bangle_id}"} ${barometer_data.altitude} ${now}\n`;
+      Bangle.emit("live_metrics_post_data", data);
+    });
   }
 
-  function get_HRM() {
+  function get_HRM(now, data) {
     // Global HRM Check
     if (typeof global.hrm !== 'undefined' && global.hrm.enabled == true) {
-      data[now]['banglejs_HRM'] = global.hrm.bpm;
-      Bangle.emit("live_metrics_done");
+      data += `banglejs_HRM{id="${settings.bangle_id}"} ${global.hrm.bpm} ${now}\n`;
+      Bangle.emit("live_metrics_barometer", now, data);
     }
     // No global HRM
     else {
@@ -139,47 +146,26 @@ var live_metrics = (function () {
       function _get_HRM(hrm_data) {
         if (hrm_data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
-          data[now]['banglejs_HRM'] = hrm_data.bpm;
-          Bangle.emit("live_metrics_done");
+          data += `banglejs_HRM{id="${settings.bangle_id}"} ${hrm_data.bpm} ${now}\n`;
+          Bangle.emit("live_metrics_barometer", now, data);
         }
       }
       Bangle.on('HRM',_get_HRM);
     }
   }
 
-  function done() {
-    // Check connectivity
-    check_connectivity().then(is_connected => {
-      if (is_connected) {
-        count = 0;
-        for (const time in data) {
-          for (const metric in data[time]) {
-            setTimeout(function(metric, time, data, bangle_id) {
-              post_data(metric, time, ',3:label:id', [data[time][metric], bangle_id]);
-            }, (100*count)+1, metric, time, data, settings.bangle_id);
-          }
-          count += 1;
-        }
-        data = {};
-        // require("Storage").writeJSON("live_metrics.data.json", data);
-      }
-      else {
-        // require("Storage").writeJSON("live_metrics.data.json", data);
-      }
-      console.log(data);
-    });
-  }
-
   function start() {
-    gather_data();
-    setInterval(gather_data, settings.update_interval_in_minutes*60*1000);
+    let now = now_to_current_minute().getTime();
+    let data = gather_data(now);
+    get_HRM(now, data);
   }
 
   if (settings.enabled) {
     // Activate listeners
     Bangle.on("live_metrics_barometer", persist_barometer);
-    Bangle.on("live_metrics_done", done);
+    Bangle.on("live_metrics_post_data", post_data);
 
+    // If custom id isn't specified use device ID.
     if (settings.bangle_id == '') {
       settings.bangle_id = NRF.getAddress().substr().substr(12).replace(':', '');
     }
@@ -188,17 +174,21 @@ var live_metrics = (function () {
     ms_to_next_minute = (60 - now.getSeconds()) * 1000 + (settings.update_interval_in_minutes-1)*60*1000;
 
     setTimeout(start, ms_to_next_minute);
+    setInterval(start, settings.update_interval_in_minutes*60*1000);
   }
   else {
     delete settings;
   }
 
   return {
-    done,
-    data,
-    gather_data,
     settings,
+    stored_data,
     http,
-    check_connectivity
+    check_connectivity,
+    post_data,
+    now_to_current_minute,
+    is_waring,
+    gather_data,
+    start
   };
 })();
