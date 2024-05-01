@@ -167,6 +167,7 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
       function _get_HRM(hrm_data) {
         if (hrm_data.confidence > 80) {
           Bangle.setHRMPower(false, "live_metrics");
+          Bangle.removeListener('HRM',_get_HRM);
           data += `${hrm_data.bpm},`;
           Bangle.emit("live_metrics_barometer", data);
         }
