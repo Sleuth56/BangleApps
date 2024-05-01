@@ -32,7 +32,6 @@ var global_hrm = (function () {
       Bangle.oldSetHRMPower(false, "global_hrm");
     }
   }
-  Bangle.on('HRM',_get_HRM);
   // Turns on the HRM sensor than waits till the confidence value is above the user specified value
   // Than records it to the global variable and to a file. We also emit a HRM event so everything updates to our new value
   function updateHrm() {
@@ -46,6 +45,7 @@ var global_hrm = (function () {
 
   // When enabled update HRM value than do it again when it's time
   if (global.hrm.enabled) {
+    Bangle.on('HRM',_get_HRM);
     // Load and emit the saved HRM value
     if (global.hrm.bpm !== "undefined") {
       Bangle.emit("HRM", {"bpm": global.hrm.bpm, "confidence": global.hrm.confidence});
