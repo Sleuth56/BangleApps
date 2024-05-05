@@ -1,7 +1,7 @@
 { "id": "live_metrics",
   "name": "Live Metrics",
   "shortName":"Live Metrics",
-  "version":"0.07",
+  "version":"0.08",
   "description": "Uploads sensor data to victoria metrics time series database.",
   "icon": "app.png",
   "type": "bootloader",
