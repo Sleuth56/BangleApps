@@ -1,3 +1,7 @@
+global.live_metrics = Object.assign({
+  history_upload: false
+});
+
 var live_metrics = (function () {
   var settings = Object.assign({
     enabled: false,
@@ -62,42 +66,46 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   }
 
   function post_data(data) {
-    console.log(data);
-    check_connectivity().then(is_connected => {
-      if (is_connected) {
-        let formatted_data = innumerate_data(data);
-        let url = `${settings.server_url}/api/v1/import/prometheus`;
-        if (settings.enable_basic_auth) {
-          let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
-          Bangle.http(url, {
-            headers: {'Authorization': `Basic ${btoa(creds)}`},
-            method: "post",
-            body: formatted_data
-          }).then(data=>{
-            console.log("Got ",data);
-          }).catch((err) => {
-            console.log("Got ", err.toString());
-          });
+    return new Promise(resolve => {
+      console.log(data);
+      check_connectivity().then(is_connected => {
+        if (is_connected) {
+          let formatted_data = innumerate_data(data);
+          let url = `${settings.server_url}/api/v1/import/prometheus`;
+          if (settings.enable_basic_auth) {
+            let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
+            Bangle.http(url, {
+              headers: {'Authorization': `Basic ${btoa(creds)}`},
+              method: "post",
+              body: formatted_data
+            }).then(data=>{
+              console.log("Got ",data);
+              return resolve("Success!");
+            }).catch((err) => {
+              console.log("Got ", err.toString());
+            });
+          }
+          else {
+            Bangle.http(url, {
+              method: "post",
+              body: formatted_data
+            }).then(data=>{
+              console.log("Got ",data);
+              return resolve("Success!");
+            }).catch((err) => {
+              console.log("Got ", err.toString());
+            });
+          }
         }
         else {
-          Bangle.http(url, {
-            method: "post",
-            body: formatted_data
-          }).then(data=>{
-            console.log("Got ",data);
-          }).catch((err) => {
-            console.log("Got ", err.toString());
-          });
+          console.log("Not connected!");
+          data += `\n`;
+          stored_data_append = require("Storage").open("live_metrics.cache","a");
+          stored_data_append.write(data);
         }
-      }
-      else {
-        console.log("Not connected!");
-        data += `\n`;
-        stored_data_append = require("Storage").open("live_metrics.cache","a");
-        stored_data_append.write(data);
-      }
+      });
     });
-  }
+    }
 
   function now_to_current_minute() {
     let coeff = 1000 * 60 * 1;
@@ -194,6 +202,18 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
     return lines;
   }
 
+  function history(file) {
+    let lines = read_lines(file, 90);
+    if (lines === undefined) {
+      file.erase();
+      global.live_metrics.history_upload = false;
+      return;
+    }
+    post_data(lines).then((value) => {
+      setTimeout(history, 1000, file);
+    });
+  }
+
   function start() {
     let now = now_to_current_minute().getTime();
     let data = gather_data(now);
@@ -201,20 +221,12 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
 
     // Run historical data
     let stored_data_read = require("Storage").open("live_metrics.cache","r");
-    if (stored_data_read.readLine()) {
+    if (stored_data_read.readLine() && !global.live_metrics.history_upload) {
+      global.live_metrics.history_upload = true;
       check_connectivity().then(is_connected => {
         stored_data_read = require("Storage").open("live_metrics.cache","r");
         if (is_connected) {
-          let lines = read_lines(stored_data_read, 30);
-          let count = 1;
-          while (lines !== undefined) {
-            setTimeout(function(lines) {
-              post_data(lines);
-            }, (500*count)+1, lines);
-            lines = read_lines(stored_data_read, 30);
-            count ++;
-          }
-          stored_data_read.erase();
+          history(stored_data_read);
         }
       });
     }
@@ -243,8 +255,11 @@ banglejs_altitude{id="${settings.bangle_id}"} ${parsed_line[9]} ${parsed_line[0]
   return {
     settings,
     http,
+    history,
     check_connectivity,
     post_data,
+    read_lines,
+    innumerate_data,
     now_to_current_minute,
     is_waring,
     gather_data,
