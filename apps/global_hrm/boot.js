@@ -1,3 +1,8 @@
+// TODO
+// Add get HRM on wakeup
+// Add "sports mode" if HRM is over a threshold use different interval
+// Add fake confidence setting for compatibility 
+
 // Create the global HRM object
 global.hrm = Object.assign({
   bpm: undefined,
