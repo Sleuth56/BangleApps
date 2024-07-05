@@ -124,7 +124,7 @@ var live_metrics = (function () {
 
         function is_waring() {
           // If the watch is colder than 30C it's not being worn
-          if (E.getTemperature() >= 24 || Bangle.getHealthStatus("last").movement >= 400) {
+          if (E.getTemperature() >= 24 || Math.round((movement_value*8192.0)/movement_samples) >= 200) {
             return 1;
           }
           else {
@@ -158,13 +158,11 @@ var live_metrics = (function () {
             data += `1,`;
           }
           
+          // // Movement
           data += `${Math.round((movement_value*8192.0)/movement_samples)},`;
           // Reset every minute
           movement_value = 0;
           movement_samples = 0;
-
-          // // Movement
-          // data += `${Bangle.getHealthStatus("last").movement},`;
       
           return data;
         }
