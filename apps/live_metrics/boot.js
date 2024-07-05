@@ -13,6 +13,15 @@ var live_metrics = (function () {
     basic_auth_password: ''
   }, require("Storage").readJSON("live_metrics.json", true) || {});
 
+  // Gather the data
+  let movement_value = 0;
+  let movement_samples = 0;
+  
+  Bangle.on('accel', function(data) { 
+    movement_value += data.diff;
+    movement_samples ++;
+  });
+
   function http(url, method, body) {
     let creds = `${settings.basic_auth_username}:${settings.basic_auth_password}`;
     return new Promise(resolve => {
@@ -148,9 +157,14 @@ var live_metrics = (function () {
             data += `0,`;
             data += `1,`;
           }
-      
-          // Movement
-          data += `${Bangle.getHealthStatus("last").movement},`;
+          
+          data += `${Math.round((movement_value*8192.0)/movement_samples)},`;
+          // Reset every minute
+          movement_value = 0;
+          movement_samples = 0;
+
+          // // Movement
+          // data += `${Bangle.getHealthStatus("last").movement},`;
       
           return data;
         }
@@ -217,7 +231,6 @@ var live_metrics = (function () {
         function start() {
           let now = now_to_current_minute().getTime();
           let data = gather_data(now);
-          get_HRM(now, data);
       
           // Run historical data
           let stored_data_read = require("Storage").open("live_metrics.cache","r");
@@ -230,6 +243,8 @@ var live_metrics = (function () {
               }
             });
           }
+          // Gather Current data
+          get_HRM(now, data);
         }
       
         if (settings.enabled) {
