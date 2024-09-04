@@ -5,6 +5,7 @@
   * ---------------------------------------------------------------
   */
 
+  let background = require("clockbg");
   let storage = require("Storage");
   let locale = require("locale");
   let widgets = require("widget_utils");
@@ -219,16 +220,22 @@
   */
 
   let draw = (function() {
-    let updatePerMinute = true; // variable to track the state of time display
+    let updatePerMinute = true;
 
     return function(boxes) {
       date = new Date();
       g.clear();
-      if (bgImage) {
+
+      // Always draw backgrounds full screen
+
+      if (bgImage) { // Check for bg in boxclk config
         g.drawImage(bgImage, 0, 0);
+      } else { // Otherwise use clockbg module
+        background.fillRect(0, 0, g.getWidth(), g.getHeight());
       }
+      
       if (boxes.time) {
-        boxes.time.string = modString(boxes.time, locale.time(date, isBool(boxes.time.short, true) ? 1 : 0));
+        boxes.time.string = modString(boxes.time, locale.time(date, isBool(boxes.time.short, true) ? 1 : 0).trim());
         updatePerMinute = isBool(boxes.time.short, true);
       }
       if (boxes.meridian) {
