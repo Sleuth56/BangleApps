@@ -1,0 +1,24 @@
+0.01: New App!
+0.02: Fix app icon size
+0.03: Fix naming so step goal screen shows correctly
+0.04: Change how settings work
+0.05: Finally everything works
+0.06: Fix a bug where has_triggered wasn't being set to true when the alert screen was triggered.
+0.07: We now respect the settings for if the goal screen should be displayed.
+0.08: Add nag screen for when you didn't get your steps in for the hour to meet your goal.
+0.09: Add hourly step goal reminder when you don't get enough steps.
+0.10: Bug fix could trigger one hour after stop time and show reminder screen on app open.
+0.11: Fix reminder screen not respecting settings toggle. Reword reminder screen.
+0.12: Fix step reminder occasionally not showing.
+0.13: Fix step reminder showing more than it should.
+0.14: Fix step reminder showing more than it should.
+0.15: Fix step reminder showing more than it should.
+0.16: Fix step screen taking watch hostage.
+0.17: Update code so graphics display correctly.
+0.18: Fix mixup screens.
+0.19: Make bootloader app.
+0.20: Fix step reminder having the wrong number of steps.
+0.21: Pretty screens and fast loading!
+0.22: Finish up some stuff and minify
+0.23: Add setting to change what minute to receive your step reminder.
+0.24: Bug fix so the step reminder starts displaying at the correct hour and settings fix.

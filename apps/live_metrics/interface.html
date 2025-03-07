@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="../../css/spectre.min.css">
+  </head>
+  <body>
+    <h3>Live Metrics</h3>
+    <p>
+      Enabled: <input id="enabled" type="checkbox"></input><br>
+      Update Interval In Minutes:
+      <input id="update_interval_in_minutes" onkeyup="checkInput()"  style="width:10%; margin: 3px" type="number" value="1"></input><br>
+      Server URL: 
+      <input id="server_url" onkeyup="checkInput()"  style="width:90%; margin: 3px" placeholder="https://espruino.com"></input><br>
+
+      An ID used to label data from this specific watch. <br>
+      Can be whatever you want or left empty to use hardware ID:
+      <input id="bangle_id" onkeyup="checkInput()"  style="width:90%; margin: 3px"></input><br>
+
+      <H5>Basic Auth</H5>
+      Enabled: <input id="enable_basic_auth" type="checkbox"></input><br>
+      Username:
+      <input id="basic_auth_username" onkeyup="checkInput()"  style="width:90%; margin: 3px"></input><br>
+      Password:
+      <input id="basic_auth_password" onkeyup="checkInput()"  style="width:90%; margin: 3px"></input><br>
+      <button id="upload" class="btn btn-primary">Save key</button>
+    </p>
+
+    <script src="../../core/lib/interface.js"></script>
+
+    <script>
+
+       function checkInput() {
+        if(document.getElementById("server_url").value==="") {
+                document.getElementById('upload').disabled = true;
+            } else {
+                document.getElementById('upload').disabled = false;
+            }
+        }
+        checkInput();
+
+        var settings = {};
+        function onInit(){
+          console.log("Loading settings from BangleJs...");
+          try {
+            Util.readStorageJSON("live_metrics.json", data=>{
+              if(data){
+                settings = data;
+                console.log("Got settings", settings);
+                document.getElementById("enabled").checked = settings.enabled;
+                document.getElementById("server_url").value = settings.server_url;
+                document.getElementById("update_interval_in_minutes").value = settings.update_interval_in_minutes;
+                document.getElementById("bangle_id").value = settings.bangle_id;
+                document.getElementById("enable_basic_auth").checked = settings.enable_basic_auth;
+                document.getElementById("basic_auth_username").value = settings.basic_auth_username;
+                document.getElementById("basic_auth_password").value = settings.basic_auth_password;
+                console.log("Loaded apikey from BangleJs.");
+                checkInput();
+              }
+            });
+          } catch(ex) {
+              console.log("(Warning) Could not load apikey from BangleJs.");
+              console.log(ex);
+          }
+
+        }
+
+        document.getElementById("upload").addEventListener("click", function() {
+            try {
+              settings.enabled = document.getElementById("enabled").checked;
+              settings.server_url = document.getElementById("server_url").value;
+              settings.update_interval_in_minutes = document.getElementById("update_interval_in_minutes").value;
+              settings.bangle_id = document.getElementById("bangle_id").value;
+              settings.enable_basic_auth = document.getElementById("enable_basic_auth").checked;
+              settings.basic_auth_username = document.getElementById("basic_auth_username").value;
+              settings.basic_auth_password = document.getElementById("basic_auth_password").value;
+              Util.showModal("Saving...");
+              Util.writeStorage("live_metrics.json", JSON.stringify(settings), ()=>{
+                Util.hideModal();
+              });
+              console.log("Sent settings!");
+            } catch(ex) {
+                console.log("(Warning) Could not write settings to BangleJs.");
+                console.log(ex);
+            }
+        });
+
+    </script>
+  </body>
+</html>

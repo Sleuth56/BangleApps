@@ -1,0 +1,18 @@
+{ "id": "global_hrm",
+  "name": "Global HRM",
+  "shortName":"Global HRM",
+  "version":"0.06",
+  "description": "A battery saving helper app that creates a global object with the current HRM and is updated on a user specified interval.",
+  "icon": "app.png",
+  "type": "bootloader",
+  "tags": "health",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "storage": [
+    {"name":"global_hrm.settings.js","url":"settings.js"},
+    {"name":"global_hrm.boot.js","url":"boot.js"}
+  ],
+  "data": [
+    {"name": "global_hrm.json"}
+  ]
+}

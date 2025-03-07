@@ -1,3 +1,9 @@
+Added custom apps
+- global_hrm
+- live_metrics
+- step_goal
+- reloader
+
 Bangle.js App Loader (and Apps)
 ================================
 

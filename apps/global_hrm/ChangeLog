@@ -1,0 +1,6 @@
+0.01: Initial release!
+0.02: First working release.
+0.03: Add disable HRM sensor lockout and persist hrm value between resets.
+0.04: Made things more efficient.
+0.05: Potential memory leak fix
+0.06: Bug fix

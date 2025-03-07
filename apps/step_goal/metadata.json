@@ -1,0 +1,20 @@
+{ "id": "step_goal",
+  "name": "Step Goal",
+  "shortName":"Step Goal",
+  "version":"0.24",
+  "description": "Shows you when you hit your daily step goal.",
+  "icon": "app.png",
+  "tags": "health",
+  "type": "bootloader",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "storage": [
+    {"name":"step_goal.settings.js","url":"settings.js"},
+    {"name":"step_goal.boot.js","url":"boot.min.js"},
+    {"name":"step_goal.show_goal.js","url":"show_goal.min.js"},
+    {"name":"step_goal.show_reminder.js","url":"show_reminder.min.js"}
+  ],
+  "data": [
+    {"name": "step_goal.json"}
+  ]
+}

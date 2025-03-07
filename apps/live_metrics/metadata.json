@@ -1,0 +1,19 @@
+{ "id": "live_metrics",
+  "name": "Live Metrics",
+  "shortName":"Live Metrics",
+  "version":"0.08",
+  "description": "Uploads sensor data to victoria metrics time series database.",
+  "icon": "app.png",
+  "type": "bootloader",
+  "tags": "health",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "interface": "interface.html",
+  "storage": [
+    {"name":"live_metrics.boot.js","url":"boot.js"},
+    {"name":"live_metrics.settings.js","url":"settings.js"}
+  ],
+  "data": [
+    {"name": "live_metrics.json"}
+  ]
+}
